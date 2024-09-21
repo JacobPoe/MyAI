@@ -1,7 +1,7 @@
 import sys
 
 from transformers import BlipProcessor, BlipForConditionalGeneration
-from models.captioner import Captioner as cap
+from models.captioner import Captioner
 from PIL import Image
 
 import gradio as gr
@@ -10,11 +10,11 @@ import gradio as gr
 processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
 model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
 
-cap = cap(processor, model)
-
 def caption(image):
-    raw_image = Image.fromarray(image).convert('RGB')
-    return cap.caption_img(raw_image)
+  cap = Captioner(processor, model)
+  raw_image = Image.fromarray(image).convert('RGB')
+
+  return cap.caption_img(raw_image)
 
 def launch_captioner():
   demo = gr.Interface(fn=caption, inputs=gr.Image(), outputs="text", title="Image Captioning", description="Upload an image:")
