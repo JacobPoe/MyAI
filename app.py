@@ -1,17 +1,13 @@
 import sys
 
-from transformers import BlipProcessor, BlipForConditionalGeneration
-from models.captioner import Captioner
+import gradio as gr
 from PIL import Image
 
-import gradio as gr
-
-# Initialize the processor and model from Hugging Face
-processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
-model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
+from models.captioner import Captioner
+from models.chatbot import Chatbot
 
 def caption(image):
-  cap = Captioner(processor, model)
+  cap = Captioner()
   raw_image = Image.fromarray(image).convert('RGB')
 
   return cap.caption_img(raw_image)
@@ -21,7 +17,7 @@ def launch_captioner():
   demo.launch(server_name="0.0.0.0", server_port= 7860)
 
 def launch_chatbot():
-  print("Launching Chatbot")
+  chat = Chatbot()
 
 def main(argv):
   if argv[1] == "caption":

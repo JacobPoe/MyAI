@@ -6,7 +6,11 @@ processor: BlipProcessor
 model: BlipForConditionalGeneration
 
 class Captioner:
-  def __init__(self, processor: BlipProcessor, model: BlipForConditionalGeneration):
+  def __init__(self):
+  # Initialize the processor and model from Hugging Face
+    processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+    model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
+
     self.processor = processor
     self.model = model
 
