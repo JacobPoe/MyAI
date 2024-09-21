@@ -3,8 +3,12 @@ import sys
 import gradio as gr
 from PIL import Image
 
+from enums.features import Features
+
 from models.captioner import Captioner
 from models.chatbot import Chatbot
+
+startup_error = 'Missing or invalid input parameter. Please provide a valid input.\nAcceptable values are: [chat | caption]'
 
 def caption(image):
   cap = Captioner()
@@ -20,10 +24,15 @@ def launch_chatbot():
   chat = Chatbot()
 
 def main(argv):
-  if argv[1] == "caption":
+  if argv[1].lower() == Features.IMAGE_CAPTIONING.value.lower():
       launch_captioner()
-  elif argv[1] == "chat":
+  elif argv[1].lower() == Features.CHATBOT.value.lower():
       launch_chatbot()
+  else:
+      print(startup_error)
 
 if __name__ == '__main__':
-    main(sys.argv)
+    if len(sys.argv) < 2:
+        print(startup_error)
+    else:
+      main(sys.argv)
