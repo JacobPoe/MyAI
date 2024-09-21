@@ -1,3 +1,13 @@
-# Required imports for venv
+# How to start the project:
 
-# pip install langchain==0.1.11 gradio==4.21.0 transformers==4.38.2 bs4==0.0.2 requests==2.31.0 torch==2.2.1
+In the root folder of the project (the folder where app.py lives), run one of the following two commands:
+
+A) `python app.py caption`
+
+- This command will run a server at http://0.0.0.0:7860
+- This server is capable of accepting an image as an input and outputting a simple description of that image
+
+B) `python app.py chat`
+
+- This command will activate a chatbot built using OpenAI Community's GPT2-XL model
+- src: https://huggingface.co/openai-community/gpt2-xl
