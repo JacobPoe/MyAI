@@ -9,5 +9,5 @@ A) `python app.py caption`
 
 B) `python app.py chat`
 
-- This command will activate a chatbot built using OpenAI Community's GPT2-Medium model
-- src: https://huggingface.co/openai-community/gpt2-medium
+- This command will activate a chatbot built using OpenAI Community's GPT2-Large model
+- src: https://huggingface.co/openai-community/gpt2-large
