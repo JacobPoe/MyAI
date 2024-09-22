@@ -28,7 +28,7 @@ class Chatbot:
 
     generator = pipeline('text-generation', model='gpt2-medium')
     set_seed(67)
-    generator("Facilitate conversation", max_length=30, num_return_sequences=1)
+    generator("Hello!", max_length=30, num_return_sequences=5)
     self.generator = generator
 
     self.logger.log(log_level, 'Chatbot initialized successfully.')
@@ -44,18 +44,27 @@ class Chatbot:
     return self.chat(input)
 
   def chat(self, user_input: str):
-    encoded_input = self.tokenizer(user_input, return_tensors='pt')
-  
-    # Decode the output tensor to a string
-    model_output = self.model.generate(**encoded_input, max_new_tokens=500)
+    # Encode the input and add conversation history for context
+    conversation_context = " ".join([entry['user_input'] for entry in self.conversation_history[-5:]])
+    input_text = f"{conversation_context} {user_input}"
+    encoded_input = self.tokenizer(input_text, return_tensors='pt')
+
+    # Generate the output with adjusted parameters
+    model_output = self.model.generate(
+      **encoded_input,
+      max_new_tokens=5000,
+      temperature=0.7,
+      top_k=50,
+      top_p=0.95,
+      no_repeat_ngram_size=2
+    )
+
     output = self.tokenizer.decode(model_output[0], skip_special_tokens=True)
-    
     self.logger.log(log_level, output)
     self.conversation_history.append({
-      int(time.time()): {
+        'timestamp': int(time.time()),
         'user_input': user_input,
         'bot_output': output
-      }
-    })
+      })
 
     return output
