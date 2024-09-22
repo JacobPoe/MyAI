@@ -18,15 +18,15 @@ class Chatbot:
   def __init__(self, logger: Logger):
     logger.log(log_level, 'Initializing Chatbot...')
 
-    tokenizer = GPT2Tokenizer.from_pretrained('gpt2-medium')
-    model = GPT2LMHeadModel.from_pretrained('gpt2-medium')
+    tokenizer = GPT2Tokenizer.from_pretrained('gpt2-large')
+    model = GPT2LMHeadModel.from_pretrained('gpt2-large')
 
     self.logger = logger
     self.conversation_history = []
     self.model = model
     self.tokenizer = tokenizer
 
-    generator = pipeline('text-generation', model='gpt2-medium')
+    generator = pipeline('text-generation', model='gpt2-large')
     set_seed(67)
     generator("Hello!", max_length=30, num_return_sequences=5)
     self.generator = generator
