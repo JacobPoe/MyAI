@@ -29,6 +29,11 @@ class Captioner:
     self.logger.save_log(log_level, self.conversation_history)
     self.logger.log(log_level, 'Captioner instance destroyed.')
 
+  # Callback method for the gradio captioner interface
+  def callback(self, image):
+    raw_image = Image.fromarray(image).convert('RGB')
+    return self.caption_img(raw_image)
+
   def analyze_img(self, image: np.ndarray):
     # unconditional image captioning
     inputs = processor(image, return_tensors="pt")
@@ -38,12 +43,6 @@ class Captioner:
     self.conversation_history.append('[analyze_img] ::' + toReturn)
 
     return toReturn
-  
-
-  # Callback method for the gradio captioner interface
-  def callback(self, image):
-    raw_image = Image.fromarray(image).convert('RGB')
-    return self.caption_img(raw_image)
 
   def caption_img(self, image: np.ndarray):
     text = 'This is a photo of'
