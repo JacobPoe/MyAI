@@ -41,7 +41,7 @@ class Chatbot:
 
     if user_input == 'exit':
       self.logger.log(chat_level, 'Exiting chat...')
-      self.logger.save_conversation_history('Chatbot', self.conversation_history)
+      self.logger.save_log(chat_level, self.conversation_history)
       return
     
     encoded_input = self.tokenizer(user_input, return_tensors='pt')
