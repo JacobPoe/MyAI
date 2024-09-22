@@ -4,10 +4,13 @@ In the root folder of the project (the folder where app.py lives), run one of th
 
 A) `python app.py caption`
 
-- This command will run a server at http://0.0.0.0:7860
 - This server is capable of accepting an image as an input and outputting a simple description of that image
 
 B) `python app.py chat`
 
 - This command will activate a chatbot built using OpenAI Community's GPT2-Large model
 - src: https://huggingface.co/openai-community/gpt2-large
+
+Once the chosen application is running, navigate to `http://0.0.0.0:1587`.
+
+Have fun!
