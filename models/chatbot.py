@@ -1,3 +1,6 @@
+import time
+import gradio as gr
+
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, pipeline, set_seed
 
 from enums.logger import LogLevel
@@ -8,13 +11,12 @@ model: GPT2LMHeadModel
 tokenizer: GPT2Tokenizer
 
 
-chat_level: LogLevel = LogLevel.CHATBOT
+log_level: LogLevel = LogLevel.CHATBOT
 conversation_history: list
-
 
 class Chatbot:
   def __init__(self, logger: Logger):
-    logger.log(chat_level, 'Initializing Chatbot...')
+    logger.log(log_level, 'Initializing Chatbot...')
 
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2-medium')
     model = GPT2LMHeadModel.from_pretrained('gpt2-medium')
@@ -25,37 +27,35 @@ class Chatbot:
     self.tokenizer = tokenizer
 
     generator = pipeline('text-generation', model='gpt2-medium')
-    set_seed(42)
-    generator("Hello, I'm a language model,", max_length=30, num_return_sequences=1)
+    set_seed(67)
+    generator("Facilitate conversation", max_length=30, num_return_sequences=1)
     self.generator = generator
 
-    self.logger.log(chat_level, 'Chatbot initialized successfully.')
-    self.chat()
+    self.logger.log(log_level, 'Chatbot initialized successfully.')
 
-  def chat(self, i = -1):
-    i+=1
-    self.logger.log(chat_level, 'Chatbot is ready to chat. Type "exit" to end the conversation.')
-    
-    output = ''
-    user_input = input(">\t")
+  def __del__(self):
+    self.logger.save_log(log_level, self.conversation_history)
+    self.logger.log(log_level, 'Chatbot instance destroyed.')
 
-    if user_input == 'exit':
-      self.logger.log(chat_level, 'Exiting chat...')
-      self.logger.save_log(chat_level, self.conversation_history)
+  def callback(self, input):
+    if input == None:
+      self.logger.log(LogLevel.ERROR, 'Failed to submit query. Please try again.')
       return
-    
+    return self.chat(input)
+
+  def chat(self, user_input: str):
     encoded_input = self.tokenizer(user_input, return_tensors='pt')
   
     # Decode the output tensor to a string
     model_output = self.model.generate(**encoded_input, max_new_tokens=500)
     output = self.tokenizer.decode(model_output[0], skip_special_tokens=True)
-  
-    self.logger.log(chat_level, output)
+    
+    self.logger.log(log_level, output)
     self.conversation_history.append({
-      i: {
+      int(time.time()): {
         'user_input': user_input,
         'bot_output': output
       }
     })
 
-    self.chat(i)
+    return output
