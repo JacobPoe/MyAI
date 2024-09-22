@@ -16,15 +16,15 @@ class Chatbot:
   def __init__(self, logger: Logger):
     logger.log(chat_level, 'Initializing Chatbot...')
 
-    tokenizer = GPT2Tokenizer.from_pretrained('gpt2-xl')
-    model = GPT2LMHeadModel.from_pretrained('gpt2-xl')
+    tokenizer = GPT2Tokenizer.from_pretrained('gpt2-medium')
+    model = GPT2LMHeadModel.from_pretrained('gpt2-medium')
 
     self.logger = logger
     self.conversation_history = []
     self.model = model
     self.tokenizer = tokenizer
 
-    generator = pipeline('text-generation', model='gpt2-xl')
+    generator = pipeline('text-generation', model='gpt2-medium')
     set_seed(42)
     generator("Hello, I'm a language model,", max_length=30, num_return_sequences=1)
     self.generator = generator
@@ -37,7 +37,7 @@ class Chatbot:
     self.logger.log(chat_level, 'Chatbot is ready to chat. Type "exit" to end the conversation.')
     
     output = ''
-    user_input = input("  >\t")
+    user_input = input(">\t")
 
     if user_input == 'exit':
       self.logger.log(chat_level, 'Exiting chat...')
