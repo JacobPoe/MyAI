@@ -1,18 +1,25 @@
-from transformers import BlipProcessor, BlipForConditionalGeneration
-
 import numpy as np
 
-processor: BlipProcessor
+from transformers import BlipProcessor, BlipForConditionalGeneration
+
+from enums.logger import LogLevel
+from utils.logger import Logger
+
+log_level: LogLevel = LogLevel.CAPTION
+
+logger: Logger
 model: BlipForConditionalGeneration
+processor: BlipProcessor
 
 class Captioner:
-  def __init__(self):
+  def __init__(self, logger: Logger):
   # Initialize the processor and model from Hugging Face
     processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
     model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
 
-    self.processor = processor
+    self.logger = logger
     self.model = model
+    self.processor = processor
 
   def caption_img(self, image: np.ndarray):
     text = 'This is a photo of'
@@ -20,7 +27,7 @@ class Captioner:
 
     out = self.model.generate(**inputs)
     toReturn = self.processor.decode(out[0], skip_special_tokens=True)
-    print('[models.Captioner::caption_img()]\t'+ toReturn, type(toReturn))
+    logger.log(log_level, toReturn)
     
     return toReturn
 
@@ -29,6 +36,6 @@ class Captioner:
     inputs = processor(image, return_tensors="pt")
     out = self.model.generate(**inputs)
     toReturn = self.processor.decode(out[0], skip_special_tokens=True)
-    print('[models.Captioner::analyze_image()]\t'+ toReturn, type(toReturn))
+    self.logger.log(log_level, toReturn)
 
     return toReturn

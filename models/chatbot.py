@@ -1,79 +1,61 @@
-import json
-import os
-
-from datetime import datetime
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, pipeline, set_seed
+
+from enums.logger import LogLevel
+from utils.logger import Logger
 
 generator: pipeline
 model: GPT2LMHeadModel
 tokenizer: GPT2Tokenizer
 
+
+chat_level: LogLevel = LogLevel.CHATBOT
 conversation_history: list
 
+
 class Chatbot:
-  def __init__(self):
-    print('[models.Chatbot::__init__()] Chatbot initialized')
+  def __init__(self, logger: Logger):
+    logger.log(chat_level, 'Initializing Chatbot...')
 
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2-xl')
     model = GPT2LMHeadModel.from_pretrained('gpt2-xl')
 
-    self.tokenizer = tokenizer
-    self.model = model
+    self.logger = logger
     self.conversation_history = []
+    self.model = model
+    self.tokenizer = tokenizer
 
     generator = pipeline('text-generation', model='gpt2-xl')
     set_seed(42)
-    generator("Hello, I'm a language model,", max_length=30, num_return_sequences=5)
+    generator("Hello, I'm a language model,", max_length=30, num_return_sequences=1)
     self.generator = generator
 
-    self.chat(True)
-    self.save_conversation_history()
+    self.logger.log(chat_level, 'Chatbot initialized successfully.')
+    self.chat()
 
-    print('[models.Chatbot::chat()] Chatbot conversation terminated.')
-
-  def chat(self, ongoing: bool):
-    print('[models.Chatbot::chat()] Chatbot is ready to chat. Type "exit" to end the conversation.')
+  def chat(self, i = -1):
+    i+=1
+    self.logger.log(chat_level, 'Chatbot is ready to chat. Type "exit" to end the conversation.')
     
-    i = 0
     output = ''
-    while ongoing:
-      user_input = input("  >\t")
+    user_input = input("  >\t")
 
-      if user_input == 'exit':
-        ongoing = False
-        encoded_input = self.tokenizer('User has terminated conversation. Goodbye!', return_tensors='pt')
-      else:
-        encoded_input = self.tokenizer(user_input, return_tensors='pt')
-      
-      # Decode the output tensor to a string
-      model_output = self.model.generate(**encoded_input, max_new_tokens=100)
-      output = self.tokenizer.decode(model_output[0], skip_special_tokens=True)
+    if user_input == 'exit':
+      self.logger.log(chat_level, 'Exiting chat...')
+      self.logger.save_conversation_history('Chatbot', self.conversation_history)
+      return
     
-      print('ch@\t', output)
-
-      self.conversation_history.append({
-        i: {
-          'user_input': user_input,
-          'bot_output': output
-        }
-      })
-
-      i += 1
-    return
+    encoded_input = self.tokenizer(user_input, return_tensors='pt')
   
-  def save_conversation_history(self):
-    print('[models.Chatbot::save_conversation_history()] Saving conversation history...')
-        
-    # Ensure the history directory exists
-    os.makedirs('history', exist_ok=True)
-    
-    # Define the file path
-    timestamp = datetime.now().strftime("%Y-%m-%d%H-%M-%S")
-    file_path = os.path.join('history', 'chat__' + timestamp + '.json')
-    
-    # Write the conversation history to the JSON file
-    with open(file_path, 'w') as f:
-      json.dump(self.conversation_history, f, indent=2)
-    
-    print(f'[models.Chatbot::save_conversation_history()] Conversation history saved to {file_path}')
-    return
+    # Decode the output tensor to a string
+    model_output = self.model.generate(**encoded_input, max_new_tokens=500)
+    output = self.tokenizer.decode(model_output[0], skip_special_tokens=True)
+  
+    self.logger.log(chat_level, output)
+    self.conversation_history.append({
+      i: {
+        'user_input': user_input,
+        'bot_output': output
+      }
+    })
+
+    self.chat(i)
