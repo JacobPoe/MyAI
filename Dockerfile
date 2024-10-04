@@ -22,4 +22,8 @@ ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 # -----------------------------------------------------------------
 
+# Port number of the server in the container
+EXPOSE 8000
+
+# Run the server
 CMD ["python", "-u", "server.py"]
