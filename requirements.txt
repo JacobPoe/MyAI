@@ -2,3 +2,4 @@ Flask
 Flask_Cors
 openai
 requests
+python-dotenv
