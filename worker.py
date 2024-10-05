@@ -1,6 +1,10 @@
 from openai import OpenAI
 import requests
 
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv()
+
 openai_client = OpenAI()
 
 
