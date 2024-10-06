@@ -7,7 +7,7 @@ from enums.logger import LogLevel
 class Logger:
   def log(self, level: LogLevel, message: str):
     # TODO: Control flow to check if level is part of enum
-    print(f"[{level.value}] :: {message}")
+    print(f"[MyAI-{level.value}] :: {message}")
   
   def save_log(self, caller: LogLevel, conversation_history):
     self.log(LogLevel.INFO, 'Saving conversation history...')

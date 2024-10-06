@@ -16,8 +16,6 @@ COPY certs/rootCA.crt /usr/local/share/ca-certificates/rootCA.crt
 RUN chmod 644 /usr/local/share/ca-certificates/rootCA.crt && \
   update-ca-certificates
 
-# Set the environment variable OPENAI_API_KEY to empty string
-ENV OPENAI_API_KEY=skills-network
 ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 # -----------------------------------------------------------------

@@ -1,4 +1,6 @@
 .env
+.vscode/
+*.wav
 __pycache__/
 
 certs/

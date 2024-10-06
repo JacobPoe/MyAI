@@ -36,8 +36,8 @@ const getSpeechToText = async (userRecording) => {
   return response.text;
 };
 
-const processUserMessage = async (userMessage) => {
-  let response = await fetch(baseUrl + "/process-message", {
+const processUserMessage = async (userMessage, endpoint) => {
+  let response = await fetch(baseUrl + endpoint, {
     method: "POST",
     headers: { Accept: "application/json", "Content-Type": "application/json" },
     body: JSON.stringify({ userMessage: userMessage, voice: voiceOption }),
@@ -149,9 +149,20 @@ const populateUserMessage = (userMessage, userRecording) => {
   scrollToBottom();
 };
 
-const populateBotResponse = async (userMessage) => {
+const populateBotResponse = async (userMessage, inputType) => {
   await showBotLoadingAnimation();
-  const response = await processUserMessage(userMessage);
+  // const response = await processUserMessage(userMessage);
+
+  let response = {};
+  switch (inputType) {
+    case 'TTS':
+      response = await processUserMessage(userMessage, "/text-to-speech");
+      break;
+    case 'STT':
+      response = await processUserMessage(userMessage, "/speech-to-text");
+      break;
+  }
+
   responses.push(response);
 
   const repeatButtonID = getRandomID();
@@ -180,7 +191,7 @@ $(document).ready(function () {
       const message = inputVal;
 
       populateUserMessage(message, null);
-      populateBotResponse(message);
+      populateBotResponse(message, 'TTS');
     }
 
     inputVal = $("#message-input").val();
@@ -211,7 +222,7 @@ $(document).ready(function () {
         await showUserLoadingAnimation();
         const userMessage = await getSpeechToText(userRecording);
         populateUserMessage(userMessage, userRecording);
-        populateBotResponse(userMessage);
+        populateBotResponse(userMessage, 'STT');
       });
       $(".fa-microphone").css("color", "#125ee5");
       recording = false;
@@ -220,7 +231,8 @@ $(document).ready(function () {
       const message = cleanTextInput($("#message-input").val());
 
       populateUserMessage(message, null);
-      populateBotResponse(message);
+
+      populateBotResponse(message, 'TTS');
 
       $("#send-button")
         .removeClass("send")
