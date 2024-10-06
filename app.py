@@ -23,20 +23,6 @@ def index():
 
 ### POSTs
 ####################################################################################################
-@app.route('/process-message', methods=['POST'])
-def process_prompt_route():
-  # TODO: Implement
-  # Does this need its own route if not relying on OpenAPI?
-  
-  # Original Code
-  # response = app.response_class(
-  #   response=json.dumps({"openaiResponseText": None, "openaiResponseSpeech": None}),
-  #   status=200,
-  #   mimetype='application/json'
-  # )
-  # return response
-  return None
-
 @app.route('/speech-to-text', methods=['POST'])
 def speech_to_text_route():
   return speech_to_text(request.data)
