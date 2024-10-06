@@ -36,14 +36,14 @@ const getSpeechToText = async (userRecording) => {
   return response.text;
 };
 
+// TODO: Refactor in order to differentiate between TTS and STT reqs
 const processUserMessage = async (userMessage, endpoint) => {
   let response = await fetch(baseUrl + endpoint, {
     method: "POST",
-    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ userMessage: userMessage, voice: voiceOption }),
   });
-  response = await response.json();
-  console.log(response);
+  
   return response;
 };
 
@@ -98,23 +98,25 @@ const toggleRecording = async () => {
   }
 };
 
-const playResponseAudio = (function () {
+const playResponseAudio = (data) => {
+  console.log("Playing response audio", data);
+
   const df = document.createDocumentFragment();
-  return function Sound(src) {
-    const snd = new Audio(src);
-    df.appendChild(snd); // keep in fragment until finished playing
-    snd.addEventListener("ended", function () {
-      df.removeChild(snd);
-    });
-    snd.play();
-    return snd;
-  };
-})();
+  const blob = new Blob([data], { type: "audio/wav" });
+  const url = URL.createObjectURL(blob);
+  const audio = new Audio(url);
+
+  df.appendChild(audio); // keep in fragment until finished playing
+  audio.addEventListener("ended", function () {
+    df.removeChild(audio);
+  });
+  audio.play().catch(error => console.error('Error playing audio:', error));
+  return audio;
+}
 
 const getRandomID = () => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
 };
-
 const scrollToBottom = () => {
   // Scroll the chat window to the bottom
   $("#chat-window").animate({
@@ -151,7 +153,6 @@ const populateUserMessage = (userMessage, userRecording) => {
 
 const populateBotResponse = async (userMessage, inputType) => {
   await showBotLoadingAnimation();
-  // const response = await processUserMessage(userMessage);
 
   let response = {};
   switch (inputType) {
@@ -163,22 +164,23 @@ const populateBotResponse = async (userMessage, inputType) => {
       break;
   }
 
+  if (response.type == "application/json") {
+    response = await response.json();
+
+    // Append the random message to the message list
+    $("#message-list").append(
+      `<div class='message-line'><div class='message-box${
+        !lightMode ? " dark" : ""
+      }'>${
+        response
+      }</div></div>`
+    );
+  } else {
+    playResponseAudio(response);
+  }
+
   responses.push(response);
-
-  const repeatButtonID = getRandomID();
-  botRepeatButtonIDToIndexMap[repeatButtonID] = responses.length - 1;
   hideBotLoadingAnimation();
-  // Append the random message to the message list
-  $("#message-list").append(
-    `<div class='message-line'><div class='message-box${
-      !lightMode ? " dark" : ""
-    }'>${
-      response.openaiResponseText
-    }</div><button id='${repeatButtonID}' class='btn volume repeat-button' onclick='playResponseAudio("data:audio/wav;base64," + responses[botRepeatButtonIDToIndexMap[this.id]].openaiResponseSpeech);console.log(this.id)'><i class='fa fa-volume-up'></i></button></div>`
-  );
-
-  playResponseAudio("data:audio/wav;base64," + response.openaiResponseSpeech);
-
   scrollToBottom();
 };
 

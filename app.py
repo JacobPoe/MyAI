@@ -1,10 +1,13 @@
 import os
 import json
-from worker import speech_to_text, text_to_speech
 
-from flask import Flask, render_template, request
+from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 
+from nlp.worker import speech_to_text, text_to_speech
+
+from enums.logger import LogLevel
+from utils.logger import Logger
 
 # Load environment variables
 from dotenv import load_dotenv
@@ -14,6 +17,7 @@ SERVER_HOST = os.getenv("SERVER_HOST")
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
+logger = Logger()
 
 ### GETs
 ####################################################################################################
@@ -29,7 +33,13 @@ def speech_to_text_route():
 
 @app.route('/text-to-speech', methods=['POST'])
 def text_to_speech_route():
-  return text_to_speech(request.data)
+  try:
+    response = text_to_speech(request.data)
+    response.headers["Content-Type"] = "audio/wav"
+    return response
+  except Exception as e:
+    logger.log(LogLevel.ERROR, f"Error processing text to speech, {e}")
+    return jsonify({"error": str(e)}), 500
 
 ### Main
 ####################################################################################################

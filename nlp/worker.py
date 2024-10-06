@@ -1,11 +1,8 @@
+import io
 import json
 import numpy as np
-import os
-import requests
 import scipy
-import soundfile as sf
 
-from IPython.display import Audio
 from flask import jsonify, send_file
 from requests import request
 from transformers import pipeline
@@ -33,17 +30,20 @@ def text_to_speech(request, voice="default"):
 
     # Convert the audio data to a numpy array
     synthesized_tts = synthesizer(data["userMessage"])
-    logger.log(LogLevel.INFO, f"synthesized_tts: {synthesized_tts}")
 
     # Extract and flatten the audio data
     audio_data = np.array(synthesized_tts["audio"], dtype=np.float32).flatten()
     
     # Normalize audio data to the range of int16
     wav = np.int16(audio_data / np.max(np.abs(audio_data)) * 32767)
-    
-    # Write the audio data to a WAV file
-    scipy.io.wavfile.write("bark_out.wav", rate=synthesized_tts["sampling_rate"], data=wav)
-    return send_file("bark_out.wav", mimetype="audio/wav")
+
+    # Bytes obj to store audio data
+    audio_buffer = io.BytesIO()
+    scipy.io.wavfile.write(audio_buffer, rate=synthesized_tts["sampling_rate"], data=wav)
+
+    # Move the buffer's pointer back to the beginning
+    audio_buffer.seek(0)
+    return send_file(audio_buffer, mimetype="audio/wav", as_attachment=True, download_name="myai.wav")
 
   except Exception as e:
     logger.log(LogLevel.ERROR, f"Error processing text to speech, {e}")
