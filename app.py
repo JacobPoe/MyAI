@@ -1,5 +1,4 @@
 import os
-import json
 
 from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
@@ -35,7 +34,6 @@ def speech_to_text_route():
 def text_to_speech_route():
   try:
     response = text_to_speech(request.data)
-    response.headers["Content-Type"] = "audio/wav"
     return response
   except Exception as e:
     logger.log(LogLevel.ERROR, f"Error processing text to speech, {e}")

@@ -4,7 +4,6 @@ import numpy as np
 import scipy
 
 from flask import jsonify, send_file
-from requests import request
 from transformers import pipeline
 
 from enums.logger import LogLevel
@@ -43,7 +42,7 @@ def text_to_speech(request, voice="default"):
 
     # Move the buffer's pointer back to the beginning
     audio_buffer.seek(0)
-    return send_file(audio_buffer, mimetype="audio/wav", as_attachment=True, download_name="myai.wav")
+    return send_file(audio_buffer, mimetype="audio/wav", as_attachment=False)
 
   except Exception as e:
     logger.log(LogLevel.ERROR, f"Error processing text to speech, {e}")

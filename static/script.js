@@ -30,22 +30,10 @@ const getSpeechToText = async (userRecording) => {
     method: "POST",
     body: userRecording.audioBlob,
   });
-  console.log(response);
   response = await response.json();
-  console.log(response);
   return response.text;
 };
 
-// TODO: Refactor in order to differentiate between TTS and STT reqs
-const processUserMessage = async (userMessage, endpoint) => {
-  let response = await fetch(baseUrl + endpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userMessage: userMessage, voice: voiceOption }),
-  });
-  
-  return response;
-};
 
 const cleanTextInput = (value) => {
   return value
@@ -98,22 +86,6 @@ const toggleRecording = async () => {
   }
 };
 
-const playResponseAudio = (data) => {
-  console.log("Playing response audio", data);
-
-  const df = document.createDocumentFragment();
-  const blob = new Blob([data], { type: "audio/wav" });
-  const url = URL.createObjectURL(blob);
-  const audio = new Audio(url);
-
-  df.appendChild(audio); // keep in fragment until finished playing
-  audio.addEventListener("ended", function () {
-    df.removeChild(audio);
-  });
-  audio.play().catch(error => console.error('Error playing audio:', error));
-  return audio;
-}
-
 const getRandomID = () => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
 };
@@ -151,6 +123,15 @@ const populateUserMessage = (userMessage, userRecording) => {
   scrollToBottom();
 };
 
+// TODO: Refactor in order to differentiate between TTS and STT reqs
+const processUserMessage = async (userMessage, endpoint) => {
+  return await fetch(baseUrl + endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userMessage: userMessage, voice: voiceOption }),
+  });
+};
+
 const populateBotResponse = async (userMessage, inputType) => {
   await showBotLoadingAnimation();
 
@@ -164,25 +145,39 @@ const populateBotResponse = async (userMessage, inputType) => {
       break;
   }
 
-  if (response.type == "application/json") {
-    response = await response.json();
+  if (response.headers.get("Content-Type") === "application/json") {
+    const text = await response.json();
 
     // Append the random message to the message list
     $("#message-list").append(
       `<div class='message-line'><div class='message-box${
         !lightMode ? " dark" : ""
       }'>${
-        response
+        text
       }</div></div>`
     );
   } else {
-    playResponseAudio(response);
+    await playResponseAudio(response);
   }
 
   responses.push(response);
   hideBotLoadingAnimation();
   scrollToBottom();
 };
+
+const playResponseAudio = async (data) => {
+  const df = document.createDocumentFragment();
+  const blob = await data.blob();
+  const url = URL.createObjectURL(blob);
+  const audio = new Audio(url);
+
+  df.appendChild(audio); // keep in fragment until finished playing
+  audio.addEventListener("ended", function () {
+    df.removeChild(audio);
+  });
+  audio.play().catch(error => console.error('Error playing audio:', error));
+  return audio;
+}
 
 $(document).ready(function () {
   // Listen for the "Enter" key being pressed in the input field
