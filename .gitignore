@@ -1,5 +1,10 @@
+.env
+.idea/
+.vscode/
+*.wav
 __pycache__/
 
+certs/
 flagged/
 history/
 venv/

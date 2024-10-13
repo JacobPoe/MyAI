@@ -1,51 +1,51 @@
-import sys
+import os
 
-import gradio as gr
+from flask import Flask, jsonify, render_template, request
+from flask_cors import CORS
 
-from enums.features import Features
+from nlp.worker import speech_to_text, text_to_speech
+
 from enums.logger import LogLevel
-
-from models.captioner import Captioner
-from models.chatbot import Chatbot
-
 from utils.logger import Logger
 
-captioner: Captioner
-chatbot: Chatbot
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv()
+DEBUG = os.getenv("DEBUG")
+SERVER_PORT = os.getenv("SERVER_PORT")
+SERVER_HOST = os.getenv("SERVER_HOST")
+
+app = Flask(__name__)
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
 logger = Logger()
 
-server_name = '0.0.0.0'
-server_port = 1587
-startup_error = 'Missing or invalid input parameter. Please provide a valid input.\nAcceptable values are: [chat | caption]'
+### GETs
+####################################################################################################
+@app.route('/', methods=['GET'])
+def index():
+  return render_template('index.html')
 
-def launch_captioner():
-  captioner = Captioner(logger)
-  if (captioner is None):
-    logger.log(LogLevel.ERROR, 'Captioner failed to launch.')
-    return
-  
-  demo = gr.Interface(fn=captioner.callback, inputs=gr.Image(), outputs="text", title="Image Captioning", description="Upload an image:")
-  demo.launch(server_name=server_name, server_port=server_port)
+### POSTs
+####################################################################################################
+@app.route('/speech-to-text', methods=['POST'])
+def speech_to_text_route():
+  try:
+    response = speech_to_text(request.data)
+    return response
+  except Exception as e:
+    logger.log(LogLevel.ERROR, f"Error processing speech to text, {e}")
+    return jsonify({"error": str(e)}), 500
 
-def launch_chatbot():
-  chatbot = Chatbot(logger)
-  if (chatbot is None):
-    logger.log(LogLevel.ERROR, 'Chatbot failed to launch.')
-    return
-  
-  demo = gr.Interface(fn=chatbot.callback, inputs=gr.Textbox(), outputs="text", title="Chatbot", description="Input prompt:")
-  demo.launch(server_name=server_name, server_port=server_port)
+@app.route('/text-to-speech', methods=['POST'])
+def text_to_speech_route():
+  try:
+    response = text_to_speech(request.data)
+    return response
+  except Exception as e:
+    logger.log(LogLevel.ERROR, f"Error processing text to speech, {e}")
+    return jsonify({"error": str(e)}), 500
 
-def main(argv):
-  if argv[1].lower() == Features.IMAGE_CAPTIONING.value.lower():
-    launch_captioner()
-  elif argv[1].lower() == Features.CHATBOT.value.lower():
-    launch_chatbot()
-  else:
-    logger.log(LogLevel.ERROR, startup_error)
-
-if __name__ == '__main__':
-  if len(sys.argv) < 2:
-    logger.log(LogLevel.ERROR, startup_error)
-  else:
-    main(sys.argv)
+### Main
+####################################################################################################
+if __name__ == "__main__":
+  app.run(port=SERVER_PORT, host=SERVER_HOST)

@@ -1,5 +1,4 @@
 from enum import Enum
-
 class LogLevel(Enum):
   CHATBOT = 'CH@'
   ERROR = 'ERROR'
