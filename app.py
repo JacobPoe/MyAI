@@ -11,6 +11,7 @@ from utils.logger import Logger
 # Load environment variables
 from dotenv import load_dotenv
 load_dotenv()
+DEBUG = os.getenv("DEBUG")
 SERVER_PORT = os.getenv("SERVER_PORT")
 SERVER_HOST = os.getenv("SERVER_HOST")
 
@@ -28,7 +29,12 @@ def index():
 ####################################################################################################
 @app.route('/speech-to-text', methods=['POST'])
 def speech_to_text_route():
-  return speech_to_text(request.data)
+  try:
+    response = speech_to_text(request.data)
+    return response
+  except Exception as e:
+    logger.log(LogLevel.ERROR, f"Error processing speech to text, {e}")
+    return jsonify({"error": str(e)}), 500
 
 @app.route('/text-to-speech', methods=['POST'])
 def text_to_speech_route():

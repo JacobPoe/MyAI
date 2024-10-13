@@ -29,6 +29,9 @@ const getSpeechToText = async (userRecording) => {
   let response = await fetch(baseUrl + "/speech-to-text", {
     method: "POST",
     body: userRecording.audioBlob,
+    headers: {
+      "Content-Type": "audio/mpeg"
+    }
   });
   response = await response.json();
   return response.text;
@@ -44,31 +47,36 @@ const cleanTextInput = (value) => {
 };
 
 const recordAudio = () => {
-  return new Promise(async (resolve) => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const mediaRecorder = new MediaRecorder(stream);
-    const audioChunks = [];
+  return new Promise(async (resolve, reject) => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      const audioChunks = [];
 
-    mediaRecorder.addEventListener("dataavailable", (event) => {
-      audioChunks.push(event.data);
-    });
-
-    const start = () => mediaRecorder.start();
-
-    const stop = () =>
-      new Promise((resolve) => {
-        mediaRecorder.addEventListener("stop", () => {
-          const audioBlob = new Blob(audioChunks, { type: "audio/mpeg" });
-          const audioUrl = URL.createObjectURL(audioBlob);
-          const audio = new Audio(audioUrl);
-          const play = () => audio.play();
-          resolve({ audioBlob, audioUrl, play });
-        });
-
-        mediaRecorder.stop();
+      mediaRecorder.addEventListener("dataavailable", (event) => {
+        audioChunks.push(event.data);
       });
 
-    resolve({ start, stop });
+      const start = () => mediaRecorder.start();
+
+      const stop = () =>
+        new Promise((resolve) => {
+          mediaRecorder.addEventListener("stop", () => {
+            const audioBlob = new Blob(audioChunks, { type: audioChunks[0].type });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audio = new Audio(audioUrl);
+            const play = () => audio.play();
+            resolve({ audioBlob, audioUrl, play });
+          });
+
+          mediaRecorder.stop();
+        });
+
+      resolve({ start, stop });
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+      reject(error);  // Reject promise if there's an error
+    }
   });
 };
 
@@ -81,7 +89,6 @@ const toggleRecording = async () => {
     recorder.start();
   } else {
     const audio = await recorder.stop();
-    sleep(1000);
     return audio;
   }
 };
@@ -123,12 +130,15 @@ const populateUserMessage = (userMessage, userRecording) => {
   scrollToBottom();
 };
 
-// TODO: Refactor in order to differentiate between TTS and STT reqs
-const processUserMessage = async (userMessage, endpoint) => {
-  return await fetch(baseUrl + endpoint, {
+const processUserMessage = async (userMessage, endpoint, isAudio = false) => {
+  console.log("Processing user message:", userMessage);
+  const payload = isAudio ? userMessage : JSON.stringify({ userMessage: userMessage, voice: voiceOption });
+  const headers = isAudio ? {} : { "Content-Type": "application/json" };
+
+  await fetch(baseUrl + endpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userMessage: userMessage, voice: voiceOption }),
+    body: payload,
+    headers: headers,
   });
 };
 
@@ -141,20 +151,17 @@ const populateBotResponse = async (userMessage, inputType) => {
       response = await processUserMessage(userMessage, "/text-to-speech");
       break;
     case 'STT':
-      response = await processUserMessage(userMessage, "/speech-to-text");
+      response = await processUserMessage(userMessage, "/speech-to-text", true);
       break;
   }
 
-  if (response.headers.get("Content-Type") === "application/json") {
+  if (response.headers?.get("Content-Type") === "application/json") {
     const text = await response.json();
 
-    // Append the random message to the message list
     $("#message-list").append(
       `<div class='message-line'><div class='message-box${
         !lightMode ? " dark" : ""
-      }'>${
-        text
-      }</div></div>`
+      }'>${text}</div></div>`
     );
   } else {
     await playResponseAudio(response);
@@ -211,15 +218,14 @@ $(document).ready(function () {
     if ($("#send-button").hasClass("microphone") && !recording) {
       toggleRecording();
       $(".fa-microphone").css("color", "#f44336");
-      console.log("start recording");
       recording = true;
     } else if (recording) {
       toggleRecording().then(async (userRecording) => {
-        console.log("stop recording");
         await showUserLoadingAnimation();
         const userMessage = await getSpeechToText(userRecording);
+
         populateUserMessage(userMessage, userRecording);
-        populateBotResponse(userMessage, 'STT');
+        populateBotResponse(userRecording, 'STT');
       });
       $(".fa-microphone").css("color", "#125ee5");
       recording = false;
@@ -228,7 +234,6 @@ $(document).ready(function () {
       const message = cleanTextInput($("#message-input").val());
 
       populateUserMessage(message, null);
-
       populateBotResponse(message, 'TTS');
 
       $("#send-button")

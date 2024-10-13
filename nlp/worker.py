@@ -4,10 +4,14 @@ import numpy as np
 import scipy
 
 from flask import jsonify, send_file
+from pydub import AudioSegment
 from transformers import pipeline
 
 from enums.logger import LogLevel
-from enums.model_types import ModelTypes
+from enums.models import Models, Tasks
+
+from faster_whisper import WhisperModel
+model = WhisperModel(Models.FASTER_WHISPER.value)
 
 from utils.logger import Logger
 logger = Logger()
@@ -16,12 +20,27 @@ logger = Logger()
 from dotenv import load_dotenv
 load_dotenv()
 
+def speech_to_text(request):
+  logger.log(LogLevel.INFO, "Processing speech to text")
+  logger.log(LogLevel.INFO, f"request {type(request)}, {len(request)}: {request[:25]}...")
 
-def speech_to_text(audio_binary):
-  return None
+  try:
+    audio_buffer = io.BytesIO(request)
+    audio = AudioSegment.from_file(audio_buffer, format="mp3")
+    wav_buffer = io.BytesIO()
+    audio.export(wav_buffer, format="wav")
+    wav_buffer.seek(0)
+
+    sampling_rate, audio_data = scipy.io.wavfile.read(wav_buffer)
+    transcription = model.transcribe(audio_data, str(sampling_rate))
+
+    return jsonify({"transcription": transcription})
+  except Exception as e:
+    logger.log(LogLevel.ERROR, f"Error processing speech to text, {e}")
+    return jsonify({"error": str(e)}), 500
 
 def text_to_speech(request, voice="default"):
-  synthesizer = pipeline(ModelTypes.TTS.value, model="suno/bark")
+  synthesizer = pipeline(Tasks.TTS.value, model="suno/bark")
   try:
     logger.log(LogLevel.INFO, "Processing text to speech")
     input = request.decode('utf-8')
