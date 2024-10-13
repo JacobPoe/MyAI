@@ -72,7 +72,7 @@ const VoiceAssistant = () => {
 
   return (
     <>
-      <div className={`container ${lightMode ? "" : "dark-mode"}`}>
+      <div className={`myai-container ${lightMode ? "light-mode" : "dark-mode"}`}>
       <div className="row">
         <div className="col-12 text-center">
           <h1>Voice Assistant</h1>
