@@ -5,6 +5,8 @@
 __pycache__/
 
 certs/
+dist/
 flagged/
 history/
+node_modules/
 venv/
