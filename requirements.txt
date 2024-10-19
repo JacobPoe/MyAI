@@ -1,13 +1,18 @@
-Flask~=3.0.3
-Flask_Cors
-openai
-requests
-python-dotenv~=1.0.1
+# Python 3.10.15
 
-numpy~=1.26.4
-scipy~=1.14.1
-transformers~=4.38.2
-faster-whisper~=1.0.3
+Flask~=3.0.3
 Flask-Cors~=5.0.0
 gradio~=4.44.0
+numpy~=1.26.4
 pillow~=10.4.0
+python-dotenv~=1.0.1
+requests
+scipy~=1.14.1
+transformers~=4.38.2
+
+# Model dependencies
+faster-whisper
+flax
+openai
+tensorflow
+torch
