@@ -1,51 +1,129 @@
-let lightMode = true;
-let recorder = null;
-let recording = false;
-let voiceOption = "default";
-const responses = [];
-const botRepeatButtonIDToIndexMap = {};
-const userRepeatButtonIDToRecordingMap = {};
-const baseUrl = window.location.origin;
+import React, { useState, useRef } from "react";
+import { createRoot } from "react-dom/client";
 
-async function showBotLoadingAnimation() {
-  await sleep(500);
-  $(".loading-animation")[1].style.display = "inline-block";
-}
+const VoiceAssistant = () => {
+  const [message, setMessage] = useState("");
+  const [recording, setRecording] = useState(false);
+  const [voiceOption, setVoiceOption] = useState("default");
+  const [lightMode, setLightMode] = useState(true);
+  const [messages, setMessages] = useState([]);
+  const [loadingBot, setLoadingBot] = useState(false);
+  const recorderRef = useRef(null);
+  const baseUrl = window.location.origin;
 
-function hideBotLoadingAnimation() {
-  $(".loading-animation")[1].style.display = "none";
-}
+  const handleAudioInput = async (userRecording) => {
+    const response = await fetch(`${baseUrl}/speech-to-text`, {
+      method: "POST",
+      body: userRecording.audioBlob,
+      headers: { "Content-Type": "audio/mpeg" },
+    });
+    const data = await response.json();
+    setMessages([...messages, { type: "transcription", content: data.text }]);
+  };
 
-async function showUserLoadingAnimation() {
-  await sleep(100);
-  $(".loading-animation")[0].style.display = "flex";
-}
+  const handleAudioPlayback = async (data) => {
+    const df = document.createDocumentFragment();
+    const blob = await data.blob();
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
 
-function hideUserLoadingAnimation() {
-  $(".loading-animation")[0].style.display = "none";
-}
+    df.appendChild(audio); // keep in fragment until finished playing
+    audio.addEventListener("ended", function () {
+      df.removeChild(audio);
+    });
+    audio.play().catch(error => console.error('Error playing audio:', error));
+    return audio;
+  }
 
-const getSpeechToText = async (userRecording) => {
-  let response = await fetch(baseUrl + "/speech-to-text", {
-    method: "POST",
-    body: userRecording.audioBlob,
-    headers: {
-      "Content-Type": "audio/mpeg"
+  const handleTextInput = async () => {
+    setMessages([...messages, { type: "user", content: message }]);
+    setLoadingBot(true);
+
+    const response = await fetch(`${baseUrl}/text-to-speech`, {
+      method: "POST",
+      body: JSON.stringify({ userMessage: message, voice: voiceOption }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    await handleAudioPlayback(response);
+    setLoadingBot(false);
+    setMessage(""); // Clear input
+  };
+
+  const sanitize = (value) => {
+    return value
+      .replace(/[\n\t]/g, "")
+      .replace(/<[^>]*>/g, "")
+      .replace(/[<>&;]/g, "");
+  };
+  const toggleLightMode = () => setLightMode(!lightMode);
+  const toggleRecording = async () => {
+    const isRecording = !recording;
+    setRecording(isRecording);
+
+    if (!recording) {
+      // Start recording
+      recorderRef.current = await recordAudio();
+      recorderRef.current.start();
+    } else {
+      // Stop recording and process audio
+      const audio = await recorderRef.current.stop();
+      await handleAudioInput(audio);
     }
-  });
-  response = await response.json();
-  return response.text;
+  };
+
+  return (
+    <>
+      <div className={`myai-container ${lightMode ? "light-mode" : "dark-mode"}`}>
+        <div className="row">
+          <div className="col-12 text-center">
+            <h1>Voice Assistant</h1>
+            <p>Your personal assistant powered by Suno's TTS model on <a href="https://huggingface.co/suno/bark">HuggingFace</a>.</p>
+            <div>
+              <label>
+                <input type="checkbox" checked={lightMode} onChange={toggleLightMode} /> Toggle light/dark mode
+              </label>
+            </div>
+          </div>
+
+          <div className="col-12 col-md-8 mx-auto">
+            <div id="chat-window">
+              {messages.map((msg, index) => (
+                <div key={index} className={`message-line ${msg.type}`}>
+                  <div className={`message-box ${msg.type === "bot" ? "bot-text" : ""}`}>
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
+              {loadingBot && <div>Bot is typing...</div>}
+            </div>
+
+            <div className="input-group mt-1">
+              <input
+                  type="text"
+                  value={message}
+                  onChange={(e) => setMessage(sanitize(e.target.value))}
+                  className="form-control"
+                  placeholder="Type your message here..."
+              />
+              <div className="input-group-append">
+                <button onClick={handleTextInput} className="btn btn-primary">
+                  Send
+                </button>
+              </div>
+
+              <button onClick={toggleRecording} className="btn btn-primary">
+                {recording ? <i className="fa fa-stop">[STOP]</i> : <i className="fa fa-microphone">[START]</i>}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 };
 
-
-const cleanTextInput = (value) => {
-  return value
-    .trim() // remove starting and ending spaces
-    .replace(/[\n\t]/g, "") // remove newlines and tabs
-    .replace(/<[^>]*>/g, "") // remove HTML tags
-    .replace(/[<>&;]/g, ""); // sanitize inputs
-};
-
+// Helper functions outside the component
 const recordAudio = () => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -58,202 +136,24 @@ const recordAudio = () => {
       });
 
       const start = () => mediaRecorder.start();
-
       const stop = () =>
         new Promise((resolve) => {
           mediaRecorder.addEventListener("stop", () => {
             const audioBlob = new Blob(audioChunks, { type: audioChunks[0].type });
             const audioUrl = URL.createObjectURL(audioBlob);
-            const audio = new Audio(audioUrl);
-            const play = () => audio.play();
-            resolve({ audioBlob, audioUrl, play });
+            resolve({ audioBlob, audioUrl });
           });
-
           mediaRecorder.stop();
         });
 
       resolve({ start, stop });
     } catch (error) {
       console.error("Error accessing microphone:", error);
-      reject(error);  // Reject promise if there's an error
+      reject(error);
     }
   });
 };
 
-const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time));
-
-const toggleRecording = async () => {
-  if (!recording) {
-    recorder = await recordAudio();
-    recording = true;
-    recorder.start();
-  } else {
-    const audio = await recorder.stop();
-    return audio;
-  }
-};
-
-const getRandomID = () => {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2);
-};
-const scrollToBottom = () => {
-  // Scroll the chat window to the bottom
-  $("#chat-window").animate({
-    scrollTop: $("#chat-window")[0].scrollHeight,
-  });
-};
-const populateUserMessage = (userMessage, userRecording) => {
-  // Clear the input field
-  $("#message-input").val("");
-
-  // Append the user's message to the message list
-
-  if (userRecording) {
-    const userRepeatButtonID = getRandomID();
-    userRepeatButtonIDToRecordingMap[userRepeatButtonID] = userRecording;
-    hideUserLoadingAnimation();
-    $("#message-list").append(
-      `<div class='message-line my-text'><div class='message-box my-text${
-        !lightMode ? " dark" : ""
-      }'><div class='me'>${userMessage}</div></div>
-            <button id='${userRepeatButtonID}' class='btn volume repeat-button' onclick='userRepeatButtonIDToRecordingMap[this.id].play()'><i class='fa fa-volume-up'></i></button>
-            </div>`
-    );
-  } else {
-    $("#message-list").append(
-      `<div class='message-line my-text'><div class='message-box my-text${
-        !lightMode ? " dark" : ""
-      }'><div class='me'>${userMessage}</div></div></div>`
-    );
-  }
-
-  scrollToBottom();
-};
-
-const processUserMessage = async (userMessage, endpoint, isAudio = false) => {
-  console.log("Processing user message:", userMessage);
-  const payload = isAudio ? userMessage : JSON.stringify({ userMessage: userMessage, voice: voiceOption });
-  const headers = isAudio ? {} : { "Content-Type": "application/json" };
-
-  await fetch(baseUrl + endpoint, {
-    method: "POST",
-    body: payload,
-    headers: headers,
-  });
-};
-
-const populateBotResponse = async (userMessage, inputType) => {
-  await showBotLoadingAnimation();
-
-  let response = {};
-  switch (inputType) {
-    case 'TTS':
-      response = await processUserMessage(userMessage, "/text-to-speech");
-      break;
-    case 'STT':
-      response = await processUserMessage(userMessage, "/speech-to-text", true);
-      break;
-  }
-
-  if (response.headers?.get("Content-Type") === "application/json") {
-    const text = await response.json();
-
-    $("#message-list").append(
-      `<div class='message-line'><div class='message-box${
-        !lightMode ? " dark" : ""
-      }'>${text}</div></div>`
-    );
-  } else {
-    await playResponseAudio(response);
-  }
-
-  responses.push(response);
-  hideBotLoadingAnimation();
-  scrollToBottom();
-};
-
-const playResponseAudio = async (data) => {
-  const df = document.createDocumentFragment();
-  const blob = await data.blob();
-  const url = URL.createObjectURL(blob);
-  const audio = new Audio(url);
-
-  df.appendChild(audio); // keep in fragment until finished playing
-  audio.addEventListener("ended", function () {
-    df.removeChild(audio);
-  });
-  audio.play().catch(error => console.error('Error playing audio:', error));
-  return audio;
-}
-
-$(document).ready(function () {
-  // Listen for the "Enter" key being pressed in the input field
-  $("#message-input").keyup(function (event) {
-    let inputVal = cleanTextInput($("#message-input").val());
-
-    if (event.keyCode === 13 && inputVal != "") {
-      const message = inputVal;
-
-      populateUserMessage(message, null);
-      populateBotResponse(message, 'TTS');
-    }
-
-    inputVal = $("#message-input").val();
-
-    if (inputVal == "" || inputVal == null) {
-      $("#send-button")
-        .removeClass("send")
-        .addClass("microphone")
-        .html("<i class='fa fa-microphone'></i>");
-    } else {
-      $("#send-button")
-        .removeClass("microphone")
-        .addClass("send")
-        .html("<i class='fa fa-paper-plane'></i>");
-    }
-  });
-
-  // When the user clicks the "Send" button
-  $("#send-button").click(async function () {
-    if ($("#send-button").hasClass("microphone") && !recording) {
-      toggleRecording();
-      $(".fa-microphone").css("color", "#f44336");
-      recording = true;
-    } else if (recording) {
-      toggleRecording().then(async (userRecording) => {
-        await showUserLoadingAnimation();
-        const userMessage = await getSpeechToText(userRecording);
-
-        populateUserMessage(userMessage, userRecording);
-        populateBotResponse(userRecording, 'STT');
-      });
-      $(".fa-microphone").css("color", "#125ee5");
-      recording = false;
-    } else {
-      // Get the message the user typed in
-      const message = cleanTextInput($("#message-input").val());
-
-      populateUserMessage(message, null);
-      populateBotResponse(message, 'TTS');
-
-      $("#send-button")
-        .removeClass("send")
-        .addClass("microphone")
-        .html("<i class='fa fa-microphone'></i>");
-    }
-  });
-
-  // handle the event of switching light-dark mode
-  $("#light-dark-mode-switch").change(function () {
-    $("body").toggleClass("dark-mode");
-    $(".message-box").toggleClass("dark");
-    $(".loading-dots").toggleClass("dark");
-    $(".dot").toggleClass("dark-dot");
-    lightMode = !lightMode;
-  });
-
-  $("#voice-options").change(function () {
-    voiceOption = $(this).val();
-    console.log(voiceOption);
-  });
-});
+const container = document.getElementById("root");
+const root = createRoot(container);
+root.render(<VoiceAssistant />);
