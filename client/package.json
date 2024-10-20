@@ -2,7 +2,7 @@
   "name": "myai",
   "version": "1.0.0",
   "description": "React web client for the MyAI Project, powered by Flask and the HuggingFace community.",
-  "main": "../client/static/script.js",
+  "main": "static/script.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --mode=development",
