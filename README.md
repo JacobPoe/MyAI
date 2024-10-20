@@ -29,13 +29,13 @@ serve as a container for all the different Gradio exercises the course has offer
 these Gradio interfaces into React components in the future. 
 
 To run any Gradio project
-In the root folder of the project (the folder where app.py lives), run one of the following two commands:
+In the root folder of the project run one of the following two commands:
 
-A) `python gradio/app_gradio.py caption`
+A) `python server/src/gradio/app_gradio.py caption`
 
 - This server is capable of accepting an image as an input and outputting a simple description of that image
 
-B) `python gradio/app_gradio.py chat`
+B) `python server/src/gradio/app_gradio.py chat`
 
 - This command will activate a chatbot built using OpenAI Community's GPT2-Large model
 - src: https://huggingface.co/openai-community/gpt2-large
