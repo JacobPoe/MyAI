@@ -7,7 +7,7 @@ from flask import jsonify, send_file
 from pydub import AudioSegment
 from transformers import pipeline
 
-from server.src.enums import LogLevel, Models, Tasks
+from enums import LogLevel, Models, Tasks
 from logger import Logger
 logger = Logger()
 

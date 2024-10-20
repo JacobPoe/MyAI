@@ -3,9 +3,9 @@ import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from src.enums import LogLevel
-from src.utils.logger import Logger
-from worker import speech_to_text, text_to_speech
+from utils.enums import LogLevel
+from utils.logger import Logger
+from utils.nlp_worker import speech_to_text, text_to_speech
 
 # Load environment variables
 from dotenv import load_dotenv

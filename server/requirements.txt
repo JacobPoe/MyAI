@@ -21,5 +21,4 @@ tensorflow
 torch
 
 # Project Modules
--e src/nlp
--e src/utils
+-e utils

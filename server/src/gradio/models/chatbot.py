@@ -2,8 +2,8 @@ import time
 
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, pipeline, set_seed
 
-from server.src.enums import LogLevel
-from server.src.utils.logger import Logger
+from enums import LogLevel
+from logger import Logger
 
 generator: pipeline
 model: GPT2LMHeadModel

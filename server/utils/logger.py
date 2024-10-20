@@ -3,7 +3,7 @@ import os
 
 from datetime import datetime
 
-from src.enums import LogLevel
+from enums import LogLevel
 
 class Logger:
   def log(self, level: LogLevel, message: str):

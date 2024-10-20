@@ -5,8 +5,8 @@ import gradio as gr
 from models.captioner import Captioner
 from models.chatbot import Chatbot
 
-from server.src.enums import Features, LogLevel
-from server.src.utils.logger import Logger
+from enums import Features, LogLevel
+from logger import Logger
 
 captioner: Captioner
 chatbot: Chatbot
