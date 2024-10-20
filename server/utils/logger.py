@@ -2,7 +2,7 @@ import json
 import os
 
 from datetime import datetime
-from enums.logger import LogLevel
+from server.enums.logger import LogLevel
 
 class Logger:
   def log(self, level: LogLevel, message: str):

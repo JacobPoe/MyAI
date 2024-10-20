@@ -2,13 +2,13 @@ import sys
 
 import gradio as gr
 
-from enums.features import Features
-from enums.logger import LogLevel
+from server.enums.features import Features
+from server.enums.logger import LogLevel
 
 from models.captioner import Captioner
 from models.chatbot import Chatbot
 
-from utils.logger import Logger
+from server.utils.logger import Logger
 
 captioner: Captioner
 chatbot: Chatbot

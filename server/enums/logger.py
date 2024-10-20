@@ -1,6 +1,8 @@
 from enum import Enum
+
 class LogLevel(Enum):
+  CAPTION = 'CAPTION'
   CHATBOT = 'CH@'
   ERROR = 'ERROR'
-  CAPTION = 'CAPTION'
   INFO = 'INFO'
+  VOICE_ASSISTANT = 'VAST'
