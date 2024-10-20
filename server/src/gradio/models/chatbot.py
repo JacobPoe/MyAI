@@ -1,15 +1,13 @@
 import time
-import gradio as gr
 
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, pipeline, set_seed
 
-from enums.logger import LogLevel
-from utils.logger import Logger
+from enums import LogLevel
+from logger import Logger
 
 generator: pipeline
 model: GPT2LMHeadModel
 tokenizer: GPT2Tokenizer
-
 
 log_level: LogLevel = LogLevel.CHATBOT
 conversation_history: list

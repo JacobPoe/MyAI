@@ -1,7 +1,7 @@
 FROM python:3.10
 
 WORKDIR /app
-COPY . .
+COPY .. .
 
 RUN pip install -r requirements.txt
 
@@ -10,7 +10,7 @@ RUN pip install -r requirements.txt
 # REMOVE THIS WHEN DEPLOYING TO CODE ENGINE
 
 # Copy the self-signed root CA certificate into the container
-COPY certs/rootCA.crt /usr/local/share/ca-certificates/rootCA.crt
+COPY ../certs/rootCA.crt /usr/local/share/ca-certificates/rootCA.crt
 
 # Update the CA trust store to trust the self-signed certificate
 RUN chmod 644 /usr/local/share/ca-certificates/rootCA.crt && \
