@@ -2,13 +2,11 @@ import sys
 
 import gradio as gr
 
-from server.enums.features import Features
-from server.enums.logger import LogLevel
-
 from models.captioner import Captioner
 from models.chatbot import Chatbot
 
-from server.utils.logger import Logger
+from server.src.enums import Features, LogLevel
+from server.src.utils.logger import Logger
 
 captioner: Captioner
 chatbot: Chatbot
@@ -20,7 +18,7 @@ startup_error = 'Missing or invalid input parameter. Please provide a valid inpu
 
 def launch_captioner():
   captioner = Captioner(logger)
-  if (captioner is None):
+  if captioner is None:
     logger.log(LogLevel.ERROR, 'Captioner failed to launch.')
     return
   
@@ -29,7 +27,7 @@ def launch_captioner():
 
 def launch_chatbot():
   chatbot = Chatbot(logger)
-  if (chatbot is None):
+  if chatbot is None:
     logger.log(LogLevel.ERROR, 'Chatbot failed to launch.')
     return
   

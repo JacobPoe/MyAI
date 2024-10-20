@@ -1,12 +1,11 @@
 import os
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from server.nlp.worker import speech_to_text, text_to_speech
-
-from server.enums.logger import LogLevel
-from server.utils.logger import Logger
+from src.enums import LogLevel
+from src.utils.logger import Logger
+from worker import speech_to_text, text_to_speech
 
 # Load environment variables
 from dotenv import load_dotenv
@@ -21,9 +20,7 @@ logger = Logger()
 
 ### GETs
 ####################################################################################################
-@app.route('/', methods=['GET'])
-def index():
-  return render_template('index.html')
+
 
 ### POSTs
 ####################################################################################################

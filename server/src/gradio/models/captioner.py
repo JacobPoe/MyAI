@@ -3,8 +3,8 @@ import numpy as np
 from PIL import Image
 from transformers import BlipProcessor, BlipForConditionalGeneration
 
-from server.enums.logger import LogLevel
-from server.utils.logger import Logger
+from server.src.enums import LogLevel
+from logger import Logger
 
 log_level: LogLevel = LogLevel.CAPTION
 

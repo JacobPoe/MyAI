@@ -2,13 +2,12 @@ import time
 
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, pipeline, set_seed
 
-from server.enums.logger import LogLevel
-from server.utils.logger import Logger
+from server.src.enums import LogLevel
+from server.src.utils.logger import Logger
 
 generator: pipeline
 model: GPT2LMHeadModel
 tokenizer: GPT2Tokenizer
-
 
 log_level: LogLevel = LogLevel.CHATBOT
 conversation_history: list

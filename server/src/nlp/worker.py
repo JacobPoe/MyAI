@@ -7,14 +7,12 @@ from flask import jsonify, send_file
 from pydub import AudioSegment
 from transformers import pipeline
 
-from server.enums.logger import LogLevel
-from server.enums.models import Models, Tasks
+from server.src.enums import LogLevel, Models, Tasks
+from logger import Logger
+logger = Logger()
 
 from faster_whisper import WhisperModel
 model = WhisperModel(Models.FASTER_WHISPER.value)
-
-from server.utils.logger import Logger
-logger = Logger()
 
 # Load environment variables
 from dotenv import load_dotenv
