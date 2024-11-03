@@ -19,6 +19,7 @@ flax
 openai
 tensorflow
 torch
+whisper
 
 # Project Modules
 -e utils
