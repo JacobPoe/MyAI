@@ -1,3 +1,5 @@
+import '../style.css';
+
 import React, { useState, useRef } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -9,7 +11,7 @@ const VoiceAssistant = () => {
   const [messages, setMessages] = useState([]);
   const [loadingBot, setLoadingBot] = useState(false);
   const recorderRef = useRef(null);
-  const baseUrl = window.location.origin;
+  const baseUrl = 'http://localhost:1587';
 
   const handleAudioInput = async (userRecording) => {
     const response = await fetch(`${baseUrl}/speech-to-text`, {
