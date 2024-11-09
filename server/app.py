@@ -1,3 +1,5 @@
+# TODO: Set up and run pylint
+
 import os
 
 from flask import Flask, jsonify, request

@@ -9,7 +9,8 @@ class LogLevel(Enum):
   CHATBOT = 'CH@'
   ERROR = 'ERROR'
   INFO = 'INFO'
-  VOICE_ASSISTANT = 'VAST'
+  VOICE_ASSISTANT = 'VAST',
+  STT = 'STT'
 
 class Models(Enum):
   SUNO_BARK = 'suno/bark'

@@ -16,9 +16,13 @@ transformers~=4.38.2
 # Model dependencies
 faster-whisper
 flax
+huggingface-hub~=0.19.4
+ibm-watson-machine-learning~=1.0.335
+langchain~=0.0.343
 openai
 tensorflow
-torch
+tf-keras
+torch~=2.1.1
 whisper
 
 # Project Modules

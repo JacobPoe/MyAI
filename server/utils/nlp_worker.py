@@ -2,6 +2,7 @@ import io
 import json
 import numpy as np
 import scipy
+# import whisper
 
 from flask import jsonify, send_file
 from pydub import AudioSegment
