@@ -14,6 +14,7 @@ SERVER_HOST = os.getenv("SERVER_HOST")
 SERVER_PORT = 1587
 STARTUP_ERROR = "Missing or invalid input parameter. Please provide a valid input.\nAcceptable values are: [chat | caption]"
 
+
 def launch_captioner():
     captioner = Captioner()
     if captioner is None:
@@ -62,19 +63,37 @@ def launch_stt():
     demo.launch(server_name=SERVER_HOST, server_port=SERVER_PORT)
 
 
-def main(argv):
-    if argv[1].lower() == Features.IMAGE_CAPTIONING.value.lower():
-        launch_captioner()
-    elif argv[1].lower() == Features.CHATBOT.value.lower():
-        launch_chatbot()
-    elif argv[1].lower() == Features.STT.value.lower():
-        launch_stt()
-    else:
-        Logger.log(LogLevel.ERROR, STARTUP_ERROR)
+def main():
+    is_prompting = True
+    while is_prompting:
+        print(
+            """
+        Select a Gradio interface to launch:
+        1. Caption
+        2. Chat
+        3. STT
+        """
+        )
+
+        selection = input("Feature: ")
+        if selection == "1":
+            launch_captioner()
+            is_prompting = False
+            break
+        elif selection == "2":
+            launch_chatbot()
+            is_prompting = False
+            break
+        elif selection == "3":
+            launch_stt()
+            is_prompting = False
+            break
+        else:
+            Logger.log(
+                LogLevel.ERROR,
+                "Invalid selection. Please choose a valid feature.",
+            )
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        Logger.log(LogLevel.ERROR, STARTUP_ERROR)
-    else:
-        main(sys.argv)
+    main()
