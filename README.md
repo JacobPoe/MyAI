@@ -25,8 +25,6 @@ With this in mind I built on my original app.py and implemented the following:
 |-------------------------|---------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------|
 | SERVER_HOST             | 0.0.0.0                                                                                                                         | Server address where local app is hosted                                   |
 | SERVER_PORT             | 1587                                                                                                                            | Port number for your local application instance                            |
-| STT_MODEL_ID            | openai/whisper-tiny.en                                                                                                          | OpenAI model ID for the speech-to-text model                               |  
-| WHISPER_STT_LAB_MP3_URL | https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMSkillsNetwork-GPXX04C6EN/Testing%20speech%20to%20text.mp3 | Required download for the lab in `server/src/gradio/models/whisper-stt.py` |
 
 
 # NOTE: /src/gradio
