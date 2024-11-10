@@ -7,9 +7,8 @@ from enums import Models, LogLevel, PipelineFrameworks
 from logger import Logger
 
 class STT:
-    logger: Logger
-    def __init__(self, logger):
-        self.logger = logger
+    def __init__(self):
+        pass
 
     def callback(self, audio):
         return self.transcribe_audio(audio)
@@ -34,8 +33,8 @@ class STT:
             )
 
             result = pipe(audio)
-            self.logger.log(LogLevel.STT, result["text"])
+            Logger.log(LogLevel.STT, result["text"])
             return result["text"]
         except Exception as e:
-            self.logger.log(LogLevel.ERROR, f"Error processing speech to text, {e}")
+            Logger.log(LogLevel.ERROR, f"Error processing speech to text, {e}")
             return f"Error processing speech to text, {e}"

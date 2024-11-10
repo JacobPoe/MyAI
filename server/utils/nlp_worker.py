@@ -10,7 +10,6 @@ from transformers import pipeline
 
 from enums import LogLevel, Models, Tasks
 from logger import Logger
-logger = Logger()
 
 from faster_whisper import WhisperModel
 model = WhisperModel(Models.FASTER_WHISPER.value)
@@ -20,8 +19,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def speech_to_text(request):
-  logger.log(LogLevel.INFO, "Processing speech to text")
-  logger.log(LogLevel.INFO, f"request {type(request)}, {len(request)}: {request[:25]}...")
+  Logger.log(LogLevel.INFO, "Processing speech to text")
+  Logger.log(LogLevel.INFO, f"request {type(request)}, {len(request)}: {request[:25]}...")
 
   try:
     audio_buffer = io.BytesIO(request)
@@ -35,13 +34,13 @@ def speech_to_text(request):
 
     return jsonify({"transcription": transcription})
   except Exception as e:
-    logger.log(LogLevel.ERROR, f"Error processing speech to text, {e}")
+    Logger.log(LogLevel.ERROR, f"Error processing speech to text, {e}")
     return jsonify({"error": str(e)}), 500
 
 def text_to_speech(request, voice="default"):
   synthesizer = pipeline(Tasks.TTS.value, model="suno/bark")
   try:
-    logger.log(LogLevel.INFO, "Processing text to speech")
+    Logger.log(LogLevel.INFO, "Processing text to speech")
     input = request.decode('utf-8')
     data = json.loads(input)
 
@@ -63,7 +62,7 @@ def text_to_speech(request, voice="default"):
     return send_file(audio_buffer, mimetype="audio/wav", as_attachment=False)
 
   except Exception as e:
-    logger.log(LogLevel.ERROR, f"Error processing text to speech, {e}")
+    Logger.log(LogLevel.ERROR, f"Error processing text to speech, {e}")
     return jsonify({"error": str(e)}), 500
   
 # # TODO: Is paying for HuggingFace API worth it?
@@ -77,5 +76,5 @@ def text_to_speech(request, voice="default"):
 #     "inputs": data["userMessage"],
 #   }
 #   response = requests.post(TTS_INFERENCE_API, headers=headers, json=payload)
-#   logger.log(LogLevel.INFO, f"query_tts response: {response}")
+#   Logger.log(LogLevel.INFO, f"query_tts response: {response}")
 #   return response.content

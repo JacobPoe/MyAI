@@ -18,7 +18,6 @@ SERVER_HOST = os.getenv("SERVER_HOST")
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
-logger = Logger()
 
 ### GETs
 ####################################################################################################
@@ -32,7 +31,7 @@ def speech_to_text_route():
     response = speech_to_text(request.data)
     return response
   except Exception as e:
-    logger.log(LogLevel.ERROR, f"Error processing speech to text, {e}")
+    Logger.log(LogLevel.ERROR, f"Error processing speech to text, {e}")
     return jsonify({"error": str(e)}), 500
 
 @app.route('/text-to-speech', methods=['POST'])
@@ -41,7 +40,7 @@ def text_to_speech_route():
     response = text_to_speech(request.data)
     return response
   except Exception as e:
-    logger.log(LogLevel.ERROR, f"Error processing text to speech, {e}")
+    Logger.log(LogLevel.ERROR, f"Error processing text to speech, {e}")
     return jsonify({"error": str(e)}), 500
 
 ### Main

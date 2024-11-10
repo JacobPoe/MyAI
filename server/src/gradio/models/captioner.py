@@ -9,25 +9,23 @@ from logger import Logger
 log_level: LogLevel = LogLevel.CAPTION
 
 conversation_history: list
-logger: Logger
 model: BlipForConditionalGeneration
 processor: BlipProcessor
 
 class Captioner:
-  def __init__(self, logger: Logger):
+  def __init__(self):
     self.conversation_history = []
 
     # Initialize the processor and model from Hugging Face
     processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
     model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
 
-    self.logger = logger
     self.model = model
     self.processor = processor
 
   def __del__(self):
-    self.logger.save_log(log_level, self.conversation_history)
-    self.logger.log(log_level, 'Captioner instance destroyed.')
+    Logger.save_log(log_level, self.conversation_history)
+    Logger.log(log_level, 'Captioner instance destroyed.')
 
   # Callback method for the gradio captioner interface
   def callback(self, image):
@@ -39,7 +37,7 @@ class Captioner:
     inputs = processor(image, return_tensors="pt")
     out = self.model.generate(**inputs)
     toReturn = self.processor.decode(out[0], skip_special_tokens=True)
-    self.logger.log(log_level, toReturn)
+    Logger.log(log_level, toReturn)
     self.conversation_history.append('[analyze_img] ::' + toReturn)
 
     return toReturn
@@ -50,7 +48,7 @@ class Captioner:
 
     out = self.model.generate(**inputs)
     toReturn = self.processor.decode(out[0], skip_special_tokens=True)
-    self.logger.log(log_level, toReturn)
+    Logger.log(log_level, toReturn)
     self.conversation_history.append('[caption_img] ::' + toReturn)
     
     return toReturn

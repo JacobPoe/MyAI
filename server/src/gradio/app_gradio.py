@@ -12,34 +12,33 @@ from logger import Logger
 
 captioner: Captioner
 chatbot: Chatbot
-logger = Logger()
 
 server_host = os.getenv("SERVER_HOST")
 server_port = 1587
 startup_error = 'Missing or invalid input parameter. Please provide a valid input.\nAcceptable values are: [chat | caption]'
 
 def launch_captioner():
-  captioner = Captioner(logger)
+  captioner = Captioner()
   if captioner is None:
-    logger.log(LogLevel.ERROR, 'Captioner failed to launch.')
+    Logger.log(LogLevel.ERROR, 'Captioner failed to launch.')
     return
   
   demo = gr.Interface(fn=captioner.callback, inputs=gr.Image(), outputs="text", title="Image Captioning", description="Upload an image:")
   demo.launch(server_name=server_host, server_port=server_port)
 
 def launch_chatbot():
-  chatbot = Chatbot(logger)
+  chatbot = Chatbot()
   if chatbot is None:
-    logger.log(LogLevel.ERROR, 'Chatbot failed to launch.')
+    Logger.log(LogLevel.ERROR, 'Chatbot failed to launch.')
     return
   
   demo = gr.Interface(fn=chatbot.callback, inputs=gr.Textbox(), outputs="text", title="Chatbot", description="Input prompt:")
   demo.launch(server_name=server_host, server_port=server_port)
 
 def launch_stt():
-  stt = STT(logger)
+  stt = STT()
   if stt is None:
-      logger.log(LogLevel.ERROR, 'STT failed to launch.')
+      Logger.log(LogLevel.ERROR, 'STT failed to launch.')
       return
 
   demo = gr.Interface(fn=stt.callback, inputs=gr.Audio(), outputs="text", title="Speech-to-Text", description="Upload an audio file or record one with your onboard microphone:")
@@ -53,10 +52,10 @@ def main(argv):
   elif argv[1].lower() == Features.STT.value.lower():
     launch_stt()
   else:
-    logger.log(LogLevel.ERROR, startup_error)
+    Logger.log(LogLevel.ERROR, startup_error)
 
 if __name__ == '__main__':
   if len(sys.argv) < 2:
-    logger.log(LogLevel.ERROR, startup_error)
+    Logger.log(LogLevel.ERROR, startup_error)
   else:
     main(sys.argv)

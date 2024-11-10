@@ -13,13 +13,13 @@ log_level: LogLevel = LogLevel.CHATBOT
 conversation_history: list
 
 class Chatbot:
-  def __init__(self, logger: Logger):
-    logger.log(log_level, 'Initializing Chatbot...')
+  def __init__(self):
+    Logger.log(log_level, 'Initializing Chatbot...')
 
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2-large')
     model = GPT2LMHeadModel.from_pretrained('gpt2-large')
 
-    self.logger = logger
+    # TODO: Read in the conversation history from a JSON file
     self.conversation_history = []
     self.model = model
     self.tokenizer = tokenizer
@@ -29,15 +29,15 @@ class Chatbot:
     generator("Hello!", max_length=30, num_return_sequences=5)
     self.generator = generator
 
-    self.logger.log(log_level, 'Chatbot initialized successfully.')
+    Logger.log(log_level, 'Chatbot initialized successfully.')
 
   def __del__(self):
-    self.logger.save_log(log_level, self.conversation_history)
-    self.logger.log(log_level, 'Chatbot instance destroyed.')
+    Logger.save_log(log_level, self.conversation_history)
+    Logger.log(log_level, 'Chatbot instance destroyed.')
 
   def callback(self, input):
     if input == None:
-      self.logger.log(LogLevel.ERROR, 'Failed to submit query. Please try again.')
+      Logger.log(LogLevel.ERROR, 'Failed to submit query. Please try again.')
       return
     return self.chat(input)
 
@@ -46,6 +46,9 @@ class Chatbot:
     conversation_context = " ".join([entry['user_input'] for entry in self.conversation_history[-5:]])
     input_text = f"{conversation_context} {user_input}"
     encoded_input = self.tokenizer(input_text, return_tensors='pt')
+
+    # TODO: How can I configure this model for optimal performance?
+    # Research conversational models, parameters, and best practices
 
     # Generate the output with adjusted parameters
     model_output = self.model.generate(
@@ -58,7 +61,7 @@ class Chatbot:
     )
 
     output = self.tokenizer.decode(model_output[0], skip_special_tokens=True)
-    self.logger.log(log_level, output)
+    Logger.log(log_level, output)
     self.conversation_history.append({
         'timestamp': int(time.time()),
         'user_input': user_input,
