@@ -1,7 +1,6 @@
 # Python 3.10.15
 
 # Project dependencies
-babel~=2.9.1
 Flask~=3.0.3
 Flask-Cors~=5.0.0
 gradio~=4.44.1
@@ -30,3 +29,7 @@ whisper
 
 # Project Modules
 -e utils
+
+# Linting tools
+black
+pylint
