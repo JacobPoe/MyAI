@@ -21,11 +21,16 @@ With this in mind I built on my original app.py and implemented the following:
 * TODO: Section about Docker deployment
 
 # Environment Variables
-| Key                     | Value                                                                                                                           | Description                                                                |
-|-------------------------|---------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------|
-| SERVER_HOST             | 0.0.0.0                                                                                                                         | Server address where local app is hosted                                   |
-| SERVER_PORT             | 1587                                                                                                                            | Port number for your local application instance                            |
-
+| Key                   | Value                                                | Description                                      |
+|-----------------------|------------------------------------------------------|--------------------------------------------------|
+| DEBUG                 | True                                                 | Enable or disable debug mode                     |
+| SERVER_HOST           | 0.0.0.0                                              | Server address where local app is hosted         |
+| SERVER_PORT           | 1587                                                 | Port number for your local application instance  |
+| STT_SAMPLE_RATE       | 16000                                                | Sample rate for speech-to-text processing        |
+| STT_COMPUTATION_DEVICE| 0                                                    | Device index for stt computation (e.g., GPU)     |
+| HUGGINGFACE_TOKEN     | hf_n0tA70k3n                                         | Hugging Face API token                           |
+| TTS_INFERENCE_API     | https://api-inference.huggingface.co/models/suno/bark | URL for text-to-speech inference API            |
+| OPENAI_API_KEY        | sk--n0tA70k3n                                        | OpenAI API key                                   |
 
 # NOTE: /src/gradio
 
