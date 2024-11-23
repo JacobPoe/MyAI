@@ -60,7 +60,7 @@ class STT:
                 feature_extractor=processor,
                 tokenizer=tokenizer,
                 framework=PipelineFrameworks.PYTORCH.value,
-                chunk_length_s=5,
+                chunk_length_s=50,
                 device=os.getenv('STT_COMPUTATION_DEVICE', -1)
             )
 
