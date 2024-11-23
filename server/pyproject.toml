@@ -1,0 +1,3 @@
+# Code style settings using pip package Black
+[tool.black]
+line-length = 80
