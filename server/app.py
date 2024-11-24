@@ -5,7 +5,7 @@ from flask_cors import CORS
 
 from utils.enums import LogLevel
 from utils.logger import Logger
-from utils.nlp_worker import speech_to_text, text_to_speech
+from nlp.worker import speech_to_text, text_to_speech
 
 # Load environment variables
 from dotenv import load_dotenv

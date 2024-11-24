@@ -32,25 +32,20 @@ With this in mind I built on my original app.py and implemented the following:
 | TTS_INFERENCE_API     | https://api-inference.huggingface.co/models/suno/bark | URL for text-to-speech inference API            |
 | OPENAI_API_KEY        | sk--n0tA70k3n                                        | OpenAI API key                                   |
 
-# NOTE: /src/gradio
+# NOTE: gradio.py
 
-This directory serves as one giant TODO
+This file serves as one giant TODO
 
-The IBM AI Developer certification course often conducts its labs via Gradio interfaces. This directory is meant to
+The IBM AI Developer certification course often conducts its labs via Gradio interfaces. This file is meant to
 serve as a container for all the different Gradio exercises the course has offered, with the intention of refactoring 
 these Gradio interfaces into React components in the future. 
 
-To run any Gradio project
-In the root folder of the project run one of the following two commands:
+To run any Gradio project, at the root of the repo run the command `python server/gradio.py`
 
-A) `python server/src/gradio/app_gradio.py caption`
-
-- This server is capable of accepting an image as an input and outputting a simple description of that image
-
-B) `python server/src/gradio/app_gradio.py chat`
-
-- This command will activate a chatbot built using OpenAI Community's GPT2-Large model
-- src: https://huggingface.co/openai-community/gpt2-large
+- This command will prompt the user to select one of three Gradio projects:
+  - Text-to-Speech
+  - Speech-to-Text
+  - Image Captioning
 
 Once the chosen application is running, navigate to `http://0.0.0.0:1587`.
 
