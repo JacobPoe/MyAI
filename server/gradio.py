@@ -10,7 +10,7 @@ from nlp.chatbot import Chatbot
 from nlp.stt import STT
 
 SERVER_HOST = os.getenv("SERVER_HOST")
-SERVER_PORT = 1587
+SERVER_PORT = os.getenv("SERVER_PORT")
 STARTUP_ERROR = "Missing or invalid input parameter. Please provide a valid input.\nAcceptable values are: [chat | caption]"
 
 

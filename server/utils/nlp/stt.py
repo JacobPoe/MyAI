@@ -40,17 +40,21 @@ class STT:
                 )
             processor.chunk_length = 1
             processor.nb_max_frames = 3000
-            processor.sampling_rate = int(os.getenv("STT_SAMPLE_RATE", 16000))  # Default to 16kHz if not set
+            processor.sampling_rate = int(
+                os.getenv("STT_SAMPLE_RATE", 16000)
+            )  # Default to 16kHz if not set
             processor.raw = audio
 
-            tokenizer = AutoTokenizer.from_pretrained(Models.WHISPER_TINY_EN.value, use_fast=True)
+            tokenizer = AutoTokenizer.from_pretrained(
+                Models.WHISPER_TINY_EN.value, use_fast=True
+            )
             pipe = AutomaticSpeechRecognitionPipeline(
                 model=model,
                 feature_extractor=processor,
                 tokenizer=tokenizer,
                 framework=PipelineFrameworks.PYTORCH.value,
                 chunk_length_s=50,
-                device=os.getenv('STT_COMPUTATION_DEVICE', -1)
+                device=os.getenv("STT_COMPUTATION_DEVICE", -1),
             )
 
             result = pipe(audio)

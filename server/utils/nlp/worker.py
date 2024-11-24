@@ -45,6 +45,7 @@ def speech_to_text(request):
         Logger.log(LogLevel.ERROR, f"Error processing speech to text, {e}")
         return jsonify({"error": str(e)}), 500
 
+
 def text_to_speech(request, voice="default"):
     synthesizer = pipeline(Tasks.TTS.value, model="suno/bark")
     try:
