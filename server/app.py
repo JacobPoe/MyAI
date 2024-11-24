@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 DEBUG = os.getenv("DEBUG")
+ROUTE_STT = os.getenv("ROUTE_STT")
+ROUTE_TTS = os.getenv("ROUTE_TTS")
 SERVER_PORT = os.getenv("SERVER_PORT")
 SERVER_HOST = os.getenv("SERVER_HOST")
 
@@ -24,7 +26,7 @@ cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 ### POSTs
 ####################################################################################################
-@app.route("/speech-to-text", methods=["POST"])
+@app.route(ROUTE_STT, methods=["POST"])
 def speech_to_text_route():
     try:
         response = speech_to_text(request.data)
@@ -34,7 +36,7 @@ def speech_to_text_route():
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/text-to-speech", methods=["POST"])
+@app.route(ROUTE_TTS, methods=["POST"])
 def text_to_speech_route():
     try:
         response = text_to_speech(request.data)
