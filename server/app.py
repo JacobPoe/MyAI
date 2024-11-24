@@ -5,7 +5,8 @@ from flask_cors import CORS
 
 from utils.enums import LogLevel
 from utils.logger import Logger
-from nlp.worker import speech_to_text, text_to_speech
+from utils.nlp.chatbot import Chatbot
+from utils.nlp.translator import handle_audio_prompt, handle_text_prompt
 
 # Load environment variables
 from dotenv import load_dotenv
@@ -18,6 +19,7 @@ SERVER_PORT = os.getenv("SERVER_PORT")
 SERVER_HOST = os.getenv("SERVER_HOST")
 
 app = Flask(__name__)
+chatbot = Chatbot()
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 ### GETs
@@ -27,22 +29,22 @@ cors = CORS(app, resources={r"/*": {"origins": "*"}})
 ### POSTs
 ####################################################################################################
 @app.route(ROUTE_STT, methods=["POST"])
-def speech_to_text_route():
+def route_audio_prompt():
     try:
-        response = speech_to_text(request.data)
+        response = handle_audio_prompt(chatbot, request.data)
         return response
     except Exception as e:
-        Logger.log(LogLevel.ERROR, f"Error processing speech to text, {e}")
+        Logger.log(LogLevel.ERROR, f"Error processing audio prompt, {e}")
         return jsonify({"error": str(e)}), 500
 
 
 @app.route(ROUTE_TTS, methods=["POST"])
-def text_to_speech_route():
+def route_text_prompt():
     try:
-        response = text_to_speech(request.data)
-        return response
+        text, audio = handle_text_prompt(chatbot, request.data)
+        return jsonify({"text": text, "audio": audio})
     except Exception as e:
-        Logger.log(LogLevel.ERROR, f"Error processing text to speech, {e}")
+        Logger.log(LogLevel.ERROR, f"Error processing text prompt, {e}")
         return jsonify({"error": str(e)}), 500
 
 

@@ -1,12 +1,11 @@
 # Load environment variables
 from dotenv import load_dotenv
 
+import base64
 import io
 import json
 import numpy as np
 import scipy
-
-# import whisper
 
 from flask import jsonify, send_file
 from pydub import AudioSegment
@@ -17,14 +16,16 @@ from logger import Logger
 
 from faster_whisper import WhisperModel
 
+from nlp.chatbot import Chatbot
+
 model = WhisperModel(Models.FASTER_WHISPER.value)
 
 
 load_dotenv()
 
 
-def speech_to_text(request):
-    Logger.log(LogLevel.INFO, "Processing speech to text")
+def handle_audio_prompt(worker: Chatbot, request):
+    Logger.log(LogLevel.INFO, "Processing audio prompt")
     Logger.log(
         LogLevel.INFO,
         f"request {type(request)}, {len(request)}: {request[:25]}...",
@@ -42,40 +43,43 @@ def speech_to_text(request):
 
         return jsonify({"transcription": transcription})
     except Exception as e:
-        Logger.log(LogLevel.ERROR, f"Error processing speech to text, {e}")
+        Logger.log(LogLevel.ERROR, f"Error processing audio prompt, {e}")
         return jsonify({"error": str(e)}), 500
 
 
-def text_to_speech(request, voice="default"):
-    synthesizer = pipeline(Tasks.TTS.value, model="suno/bark")
+def handle_text_prompt(worker: Chatbot, request):
+    Logger.log(LogLevel.INFO, "Processing text prompt")
     try:
-        Logger.log(LogLevel.INFO, "Processing text to speech")
+        # Initialize the TTS pipeline
+        synthesizer = pipeline(Tasks.TTS.value, model="suno/bark")
+
+        # Decode the request and extract the user message
         decoded_request = request.decode("utf-8")
         data = json.loads(decoded_request)
 
-        # Convert the audio data to a numpy array
-        synthesized_tts = synthesizer(data["userMessage"])
-
-        # Extract and flatten the audio data
+        # Generate the audio response
+        transcript = worker.generate_reply(data["userMessage"])
+        audio_raw = synthesizer(transcript)
         audio_data = np.array(
-            synthesized_tts["audio"], dtype=np.float32
+            audio_raw["audio"], dtype=np.float32
         ).flatten()
 
         # Normalize audio data to the range of int16
         wav = np.int16(audio_data / np.max(np.abs(audio_data)) * 32767)
 
-        # Bytes obj to store audio data
+        # Store audio data to a buffer
         audio_buffer = io.BytesIO()
         scipy.io.wavfile.write(
-            audio_buffer, rate=synthesized_tts["sampling_rate"], data=wav
+            audio_buffer, rate=audio_raw["sampling_rate"], data=wav
         )
 
-        # Move the buffer's pointer back to the beginning
+
+        # Encode the audio buffer to base64
         audio_buffer.seek(0)
-        return send_file(
-            audio_buffer, mimetype="audio/wav", as_attachment=False
-        )
+        audio_base64 = base64.b64encode(audio_buffer.read()).decode('utf-8')
+
+        return transcript, audio_base64
 
     except Exception as e:
-        Logger.log(LogLevel.ERROR, f"Error processing text to speech, {e}")
+        Logger.log(LogLevel.ERROR, f"Error processing text prompt, {e}")
         return jsonify({"error": str(e)}), 500

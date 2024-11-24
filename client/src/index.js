@@ -14,10 +14,10 @@ const VoiceAssistant = () => {
   const baseUrl = 'http://localhost:1587';
 
   const handleAudioInput = async (userRecording) => {
-    const response = await fetch(`${baseUrl}/speech-to-text`, {
+    const response = await fetch(`${baseUrl}/api/v1/stt`, {
       method: "POST",
       body: userRecording.audioBlob,
-      headers: { "Content-Type": "audio/mpeg" },
+      headers: { "Content-Type": "audio/wav" },
     });
     const data = await response.json();
     setMessages([...messages, { type: "transcription", content: data.text }]);
@@ -25,7 +25,7 @@ const VoiceAssistant = () => {
 
   const handleAudioPlayback = async (data) => {
     const df = document.createDocumentFragment();
-    const blob = await data.blob();
+    const blob = new Blob([Uint8Array.from(atob(data), c => c.charCodeAt(0))], { type: 'audio/wav' });
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
 
@@ -41,13 +41,20 @@ const VoiceAssistant = () => {
     setMessages([...messages, { type: "user", content: message }]);
     setLoadingBot(true);
 
-    const response = await fetch(`${baseUrl}/text-to-speech`, {
+    const response = await fetch(`${baseUrl}/api/v1/tts`, {
       method: "POST",
       body: JSON.stringify({ userMessage: message, voice: voiceOption }),
       headers: { "Content-Type": "application/json" },
     });
+    const data = await response.json();
 
-    await handleAudioPlayback(response);
+    if (data.audio) {
+      await handleAudioPlayback(data.audio);
+    }
+
+    if (data.text) {
+        setMessages([...messages, { type: "bot", content: data.text }]);
+    }
     setLoadingBot(false);
     setMessage(""); // Clear input
   };
@@ -115,7 +122,7 @@ const VoiceAssistant = () => {
               </div>
 
               <button onClick={toggleRecording} className="btn btn-primary">
-                {recording ? <i className="fa fa-stop">[STOP]</i> : <i className="fa fa-microphone">[START]</i>}
+                {recording ? <i className="fa fa-stop">[STOP]</i> : <i className="fa fa-microphone">[RECORD]</i>}
               </button>
             </div>
           </div>
