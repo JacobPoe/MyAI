@@ -24,7 +24,7 @@ class Chatbot:
 
         generator = pipeline("text-generation", model="gpt2-large")
         set_seed(67)
-        generator("Hello!", max_length=30, num_return_sequences=5)
+        generator("Hello!", truncation=True, max_length=30, num_return_sequences=5)
 
         Logger.log(log_level, "Chatbot initialized successfully.")
 

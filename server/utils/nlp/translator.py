@@ -1,26 +1,21 @@
-# Load environment variables
-from dotenv import load_dotenv
-
 import base64
 import io
 import json
 import numpy as np
 import scipy
+import torch
 
 from flask import jsonify, send_file
 from pydub import AudioSegment
 from transformers import pipeline
 
-from enums import LogLevel, Models, Tasks
+from enums import LogLevel, Tasks
 from logger import Logger
-
-from faster_whisper import WhisperModel
 
 from nlp.chatbot import Chatbot
 
-model = WhisperModel(Models.FASTER_WHISPER.value)
-
-
+# Load environment variables
+from dotenv import load_dotenv
 load_dotenv()
 
 
@@ -33,14 +28,22 @@ def handle_audio_prompt(worker: Chatbot, request):
 
     try:
         audio_buffer = io.BytesIO(request)
-        audio = AudioSegment.from_file(audio_buffer, format="mp3")
+        audio = AudioSegment.from_file(audio_buffer)
         wav_buffer = io.BytesIO()
         audio.export(wav_buffer, format="wav")
-        wav_buffer.seek(0)
 
+        # Read the audio data from the wav_buffer
         sampling_rate, audio_data = scipy.io.wavfile.read(wav_buffer)
-        transcription = model.transcribe(audio_data, str(sampling_rate))
+        audio_data = normalize_audio(audio_data)
 
+        whisper = pipeline(
+            "automatic-speech-recognition",
+            "openai/whisper-large-v3",
+            torch_dtype=torch.float32
+        )
+
+        # Pass the audio data to the whisper pipeline
+        transcription = whisper(audio_data)
         return jsonify({"transcription": transcription})
     except Exception as e:
         Logger.log(LogLevel.ERROR, f"Error processing audio prompt, {e}")
@@ -83,3 +86,10 @@ def handle_text_prompt(worker: Chatbot, request):
     except Exception as e:
         Logger.log(LogLevel.ERROR, f"Error processing text prompt, {e}")
         return jsonify({"error": str(e)}), 500
+
+
+def normalize_audio(audio_data):
+    if audio_data.ndim > 1:
+        audio_data = audio_data.mean(axis=1)  # Convert to mono
+
+    return audio_data
