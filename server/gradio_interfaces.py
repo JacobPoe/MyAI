@@ -37,7 +37,7 @@ def launch_chatbot():
         return
 
     demo = gr.Interface(
-        fn=chatbot.generate_response,
+        fn=chatbot.generate_reply,
         inputs=gr.Textbox(),
         outputs="text",
         title="Chatbot",
