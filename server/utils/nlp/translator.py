@@ -28,13 +28,14 @@ def handle_audio_prompt(worker: Chatbot, request):
 
     try:
         audio_buffer = io.BytesIO(request)
-        audio = AudioSegment.from_file(audio_buffer)
         wav_buffer = io.BytesIO()
+
+        audio = AudioSegment.from_file(audio_buffer)
         audio.export(wav_buffer, format="wav")
+        wav_buffer.seek(0)
 
         # Read the audio data from the wav_buffer
         sampling_rate, audio_data = scipy.io.wavfile.read(wav_buffer)
-        audio_data = normalize_audio(audio_data)
 
         whisper = pipeline(
             "automatic-speech-recognition",
@@ -44,7 +45,8 @@ def handle_audio_prompt(worker: Chatbot, request):
 
         # Pass the audio data to the whisper pipeline
         transcription = whisper(audio_data)
-        return jsonify({"transcription": transcription})
+        Logger.log(LogLevel.INFO, f"STT transcription: {transcription}")
+        return jsonify(transcription)
     except Exception as e:
         Logger.log(LogLevel.ERROR, f"Error processing audio prompt, {e}")
         return jsonify({"error": str(e)}), 500
@@ -86,10 +88,3 @@ def handle_text_prompt(worker: Chatbot, request):
     except Exception as e:
         Logger.log(LogLevel.ERROR, f"Error processing text prompt, {e}")
         return jsonify({"error": str(e)}), 500
-
-
-def normalize_audio(audio_data):
-    if audio_data.ndim > 1:
-        audio_data = audio_data.mean(axis=1)  # Convert to mono
-
-    return audio_data
