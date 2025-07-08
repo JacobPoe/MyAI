@@ -31,7 +31,7 @@ cors = CORS(app, resources={r"/*": {"origins": "*"}})
 @app.route(ROUTE_STT, methods=["POST"])
 def route_audio_prompt():
     try:
-        response = handle_audio_prompt(chatbot, request.data)
+        response = handle_audio_prompt(chatbot, request)
         return response
     except Exception as e:
         Logger.log(LogLevel.ERROR, f"Error processing audio prompt, {e}")
@@ -41,7 +41,7 @@ def route_audio_prompt():
 @app.route(ROUTE_TTS, methods=["POST"])
 def route_text_prompt():
     try:
-        text, audio = handle_text_prompt(chatbot, request.data)
+        text, audio = handle_text_prompt(chatbot, request)
         return jsonify({"text": text, "audio": audio})
     except Exception as e:
         Logger.log(LogLevel.ERROR, f"Error processing text prompt, {e}")
