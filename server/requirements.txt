@@ -5,27 +5,15 @@ Flask~=3.0.3
 Flask-Cors~=5.0.0
 gradio~=4.44.1
 numpy~=1.26.4
-pillow~=10.4.0
 pydub~=0.25.1
 python-dotenv~=1.0.1
-requests
 scipy~=1.14.1
-setuptools~=68.2.0
-soundfile
-transformers~=4.38.2
+setuptools~=78.1.1
+transformers~=4.52.1
 
 # Model dependencies
-faster-whisper
-flax
-huggingface-hub~=0.19.4
-ibm-watson-machine-learning~=1.0.335
-langchain~=0.0.343
 librosa
-openai
-tensorflow
-tf-keras
-torch~=2.1.1
-whisper
+torch
 
 # Project Modules
 -e utils
