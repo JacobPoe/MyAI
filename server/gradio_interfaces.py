@@ -2,12 +2,12 @@ import os
 
 import gradio as gr
 
-from enums import LogLevel
-from logger import Logger
+from enums.enums import LogLevel
+from logging.logger import Logger
 
 from nlp.captioner import Captioner
 from nlp.chatbot import Chatbot
-from nlp.stt import STT
+from nlp.translator import Translator
 
 SERVER_HOST = os.getenv("SERVER_HOST")
 SERVER_PORT = os.getenv("SERVER_PORT")
@@ -47,13 +47,8 @@ def launch_chatbot():
 
 
 def launch_stt():
-    stt = STT()
-    if stt is None:
-        Logger.log(LogLevel.ERROR, "STT failed to launch.")
-        return
-
     demo = gr.Interface(
-        fn=STT.transcribe_audio,
+        fn=Translator.transcribe_audio,
         inputs=gr.Audio(),
         outputs="text",
         title="Speech-to-Text",

@@ -2,8 +2,8 @@ import time
 
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, pipeline, set_seed
 
-from enums import LogLevel
-from logger import Logger
+from enums.enums import LogLevel
+from logging.logger import Logger
 
 model: GPT2LMHeadModel
 tokenizer: GPT2Tokenizer
@@ -40,14 +40,10 @@ class Chatbot:
         input_text = f"{conversation_context} {user_input}"
         encoded_input = self.tokenizer(input_text, return_tensors="pt")
 
-        # TODO: How can I configure this model for optimal performance?
-        # Research conversational models, parameters, and best practices
-
         # Generate the output with adjusted parameters
         model_output = self.model.generate(
             **encoded_input,
-            max_new_tokens=15,
-            temperature=0.95,
+            max_new_tokens=500,
             top_k=50,
             no_repeat_ngram_size=2,
         )
@@ -56,6 +52,7 @@ class Chatbot:
             model_output[0], skip_special_tokens=True
         )
         Logger.log(log_level, output)
+
         self.conversation_history.append(
             {
                 "timestamp": int(time.time()),
