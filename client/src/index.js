@@ -97,8 +97,7 @@ const VoiceAssistant = () => {
       <div className={`myai-container ${lightMode ? "light-mode" : "dark-mode"}`}>
         <div className="row">
           <div className="col-12 text-center">
-            <h1>Voice Assistant</h1>
-            <p>Your personal assistant powered by Suno's TTS model on <a href="https://huggingface.co/suno/bark">HuggingFace</a>.</p>
+            <h1>MyAI</h1>
             <div>
               <label>
                 <input type="checkbox" checked={lightMode} onChange={toggleLightMode} /> Toggle light/dark mode
