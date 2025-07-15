@@ -14,7 +14,7 @@ from transformers.pipelines.automatic_speech_recognition import (
     AutomaticSpeechRecognitionPipeline,
 )
 
-from enums.enums import LogLevel, Models, Tasks
+from enums.enums import LogLevel, Models, Tasks, PipelineFrameworks
 from logger.logger import Logger
 from nlp.chatbot import Chatbot
 
@@ -39,10 +39,9 @@ stt_processor = AutoProcessor.from_pretrained(
 Logger.log(LogLevel.INFO, "STT processor loaded successfully.")
 
 Logger.log(LogLevel.INFO, "Loading TTS pipeline...")
-tts_pipeline = pipeline(
+synthesizer = pipeline(
     Tasks.TTS.value,
-    Models.SUNO_BARK.value,
-    torch_dtype=torch.float32
+    Models.SUNO_BARK.value
 )
 Logger.log(LogLevel.INFO, "TTS pipeline loaded successfully.")
 
@@ -57,7 +56,7 @@ asr_pipeline = AutomaticSpeechRecognitionPipeline(
     model=stt_model,
     feature_extractor=stt_processor,
     tokenizer=tokenizer,
-    framework="pt",
+    framework=PipelineFrameworks.PYTORCH.value,
     chunk_length_s=50,
     device=os.getenv("STT_COMPUTATION_DEVICE", -1),
 )
@@ -68,17 +67,8 @@ class Translator:
     def generate_audio(transcript):
         Logger.log(LogLevel.INFO, f"Generating audio response...")
 
-        # Preprocess the transcript into input features
-        input_features = tts_pipeline.tokenizer(
-            transcript,
-            return_tensors="pt",
-            padding="max_length",
-            truncation=True,
-            max_length=256
-        ).input_ids
-
         # Generate audio using the pipeline
-        audio_raw = tts_pipeline.model.generate(input_features)
+        audio_raw = synthesizer(transcript, forward_params={"do_sample": True})
 
         # Convert the generated audio to a numpy array
         audio_data = np.array(
@@ -138,8 +128,7 @@ class Translator:
         data = json.loads(decoded_request)
 
         # Generate the reply and save it to the response
-        # transcript = worker.generate_reply(data["userMessage"])
-        transcript = "TODO: remove this"
+        transcript = worker.generate_reply(data["userMessage"])
         # Return no audio data unless requested
         audio_base64 = None
 
