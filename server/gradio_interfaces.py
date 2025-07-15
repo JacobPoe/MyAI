@@ -3,7 +3,7 @@ import os
 import gradio as gr
 
 from enums.enums import LogLevel
-from logging.logger import Logger
+from logger.logger import Logger
 
 from nlp.captioner import Captioner
 from nlp.chatbot import Chatbot

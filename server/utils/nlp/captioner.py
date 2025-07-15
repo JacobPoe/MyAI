@@ -4,7 +4,7 @@ from PIL import Image
 from transformers import BlipProcessor, BlipForConditionalGeneration
 
 from enums.enums import LogLevel
-from logging.logger import Logger
+from logger.logger import Logger
 
 log_level: LogLevel = LogLevel.CAPTION
 

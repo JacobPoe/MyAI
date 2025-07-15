@@ -3,7 +3,7 @@ import time
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, pipeline, set_seed
 
 from enums.enums import LogLevel
-from logging.logger import Logger
+from logger.logger import Logger
 
 model: GPT2LMHeadModel
 tokenizer: GPT2Tokenizer

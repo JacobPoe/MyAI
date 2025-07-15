@@ -15,7 +15,7 @@ from transformers.pipelines.automatic_speech_recognition import (
 )
 
 from enums.enums import LogLevel, Models, Tasks
-from logging.logger import Logger
+from logger.logger import Logger
 from nlp.chatbot import Chatbot
 
 Logger.log(LogLevel.INFO, "Initializing STT model...")

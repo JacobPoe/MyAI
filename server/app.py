@@ -5,7 +5,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from utils.enums.enums import LogLevel
-from utils.logging.logger import Logger
+from utils.logger.logger import Logger
 from utils.nlp.chatbot import Chatbot
 from utils.nlp.translator import Translator
 
