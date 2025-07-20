@@ -32,7 +32,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 def route_audio_prompt():
     try:
         response = chatbot.handle_audio_prompt(request)
-        return response
+        return jsonify(response), 200
     except Exception as e:
         Logger.log(LogLevel.ERROR, f"Error processing audio prompt, {e}")
         return jsonify({"error": str(e)}), 500
@@ -42,7 +42,7 @@ def route_audio_prompt():
 def route_text_prompt():
     try:
         response = chatbot.handle_text_prompt(request)
-        return response, 200
+        return jsonify(response), 200
     except Exception as e:
         Logger.log(LogLevel.ERROR, f"Error processing text prompt, {e}")
         return jsonify({"error": str(e)}), 500
