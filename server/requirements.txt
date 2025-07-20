@@ -5,6 +5,7 @@ Flask~=3.0.3
 Flask-Cors~=5.0.0
 gradio~=4.44.1
 numpy~=1.26.4
+pillow~=10.4.0
 pydub~=0.25.1
 python-dotenv~=1.0.1
 scipy~=1.14.1
@@ -12,8 +13,8 @@ setuptools~=78.1.1
 transformers~=4.52.1
 
 # Model dependencies
-librosa
-torch
+librosa~=0.11.0
+torch~=2.7.1
 
 # Project Modules
 -e utils
@@ -21,3 +22,5 @@ torch
 # Linting tools
 black
 pylint
+
+utils

@@ -4,10 +4,9 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from utils.enums.enums import LogLevel
-from utils.logger.logger import Logger
+from utils.enums import LogLevel
+from utils.logger import Logger
 from utils.nlp.chatbot import Chatbot
-from utils.nlp.translator import Translator
 
 # Load and configure environment variables
 load_dotenv()
@@ -32,7 +31,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 @app.route(ROUTE_STT, methods=["POST"])
 def route_audio_prompt():
     try:
-        response = Translator.handle_audio_prompt(chatbot, request)
+        response = chatbot.handle_audio_prompt(request)
         return response
     except Exception as e:
         Logger.log(LogLevel.ERROR, f"Error processing audio prompt, {e}")
@@ -42,8 +41,8 @@ def route_audio_prompt():
 @app.route(ROUTE_TTS, methods=["POST"])
 def route_text_prompt():
     try:
-        text, audio = Translator.handle_text_prompt(chatbot, request)
-        return jsonify({"text": text, "audio": audio}), 200
+        response = chatbot.handle_text_prompt(request)
+        return response, 200
     except Exception as e:
         Logger.log(LogLevel.ERROR, f"Error processing text prompt, {e}")
         return jsonify({"error": str(e)}), 500
