@@ -1,8 +1,10 @@
 from enum import Enum
 
+
 class AudioRequestMode(Enum):
     QUESTION = "question"
     TRANSCRIBE = "transcribe"
+
 
 class LogLevel(Enum):
     CAPTION = "CAPTION"

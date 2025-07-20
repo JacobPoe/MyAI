@@ -6,7 +6,13 @@ import time
 from pydub import AudioSegment
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, pipeline, set_seed
 
-from utils.enums import AudioRequestMode, LogLevel, Models, Tasks, PipelineFrameworks
+from utils.enums import (
+    AudioRequestMode,
+    LogLevel,
+    Models,
+    Tasks,
+    PipelineFrameworks,
+)
 from utils.logger import Logger
 from utils.nlp.synthesizer import Synthesizer
 
@@ -15,7 +21,6 @@ tokenizer: GPT2Tokenizer
 
 log_level: LogLevel = LogLevel.CHATBOT
 conversation_history: list
-
 
 
 class Chatbot:
@@ -75,7 +80,9 @@ class Chatbot:
 
     def handle_audio_prompt(self, request):
         request_type = request.form.get("mode")
-        Logger.log(LogLevel.INFO, f"Processing audio prompt of type '{request_type}'")
+        Logger.log(
+            LogLevel.INFO, f"Processing audio prompt of type '{request_type}'"
+        )
 
         assert request_type is not None, "Request mode must be specified."
         assert AudioRequestMode(request_type), "Invalid request mode specified."
@@ -96,7 +103,7 @@ class Chatbot:
         return {
             "transcription": request_transcription,
             "reply": reply,
-            "audio": narration
+            "audio": narration,
         }
 
     def handle_text_prompt(self, request):
@@ -130,4 +137,3 @@ class Chatbot:
         # Read the audio data from the wav_buffer
         sampling_rate, audio_data = scipy.io.wavfile.read(wav_buffer)
         return audio_data
-
