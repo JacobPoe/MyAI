@@ -2,12 +2,11 @@ import os
 
 import gradio as gr
 
-from enums.enums import LogLevel
-from logger.logger import Logger
+from utils.enums import LogLevel
+from utils.logger import Logger
 
-from nlp.captioner import Captioner
-from nlp.chatbot import Chatbot
-from nlp.translator import Translator
+from utils.nlp.captioner import Captioner
+from utils.nlp.synthesizer import Synthesizer
 
 SERVER_HOST = os.getenv("SERVER_HOST")
 SERVER_PORT = os.getenv("SERVER_PORT")
@@ -30,25 +29,9 @@ def launch_captioner():
     demo.launch(server_name=SERVER_HOST, server_port=SERVER_PORT)
 
 
-def launch_chatbot():
-    chatbot = Chatbot()
-    if chatbot is None:
-        Logger.log(LogLevel.ERROR, "Chatbot failed to launch.")
-        return
-
-    demo = gr.Interface(
-        fn=chatbot.generate_reply,
-        inputs=gr.Textbox(),
-        outputs="text",
-        title="Chatbot",
-        description="Input prompt:",
-    )
-    demo.launch(server_name=SERVER_HOST, server_port=SERVER_PORT)
-
-
 def launch_stt():
     demo = gr.Interface(
-        fn=Translator.transcribe_audio,
+        fn=Synthesizer.transcribe_audio,
         inputs=gr.Audio(),
         outputs="text",
         title="Speech-to-Text",
@@ -64,8 +47,7 @@ def main():
             """
         Select a Gradio interface to launch:
         1. Caption
-        2. Chat
-        3. STT
+        2. STT
         """
         )
 
@@ -75,10 +57,6 @@ def main():
             is_prompting = False
             break
         elif selection == "2":
-            launch_chatbot()
-            is_prompting = False
-            break
-        elif selection == "3":
             launch_stt()
             is_prompting = False
             break
