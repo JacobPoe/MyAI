@@ -81,7 +81,7 @@ class Chatbot:
     def handle_audio_prompt(self, request):
         request_type = request.form.get("mode")
         Logger.log(
-            LogLevel.INFO, f"Processing audio prompt of type '{request_type}'"
+            LogLevel.INFO, f"Handling audio prompt of type '{request_type}'"
         )
 
         assert request_type is not None, "Request mode must be specified."
@@ -95,19 +95,19 @@ class Chatbot:
 
         # If the request is a question, generate a reply from the model using the input transcription as a prompt
         if request.form.get("mode") == AudioRequestMode.QUESTION.value:
-            reply = self.generate_reply(request_transcription)
+            reply = self.generate_reply(request_transcription["text"])
 
         if request.form.get("narrateResponse") == "true":
             narration = Synthesizer.generate_audio(reply)
 
         return {
-            "transcription": request_transcription,
+            "transcription": request_transcription["text"],
             "reply": reply,
             "audio": narration,
         }
 
     def handle_text_prompt(self, request):
-        Logger.log(LogLevel.INFO, "Processing text prompt")
+        Logger.log(LogLevel.INFO, "Handling text prompt")
 
         # Decode the request
         decoded_request = request.data.decode("utf-8")
@@ -126,6 +126,7 @@ class Chatbot:
 
     @staticmethod
     def load_request_audio(request):
+        Logger.log(LogLevel.INFO, "Loading audio data from request...")
         request_audio = request.files.get("audio").read()
         audio_buffer = io.BytesIO(request_audio)
         wav_buffer = io.BytesIO()
@@ -136,4 +137,5 @@ class Chatbot:
 
         # Read the audio data from the wav_buffer
         sampling_rate, audio_data = scipy.io.wavfile.read(wav_buffer)
+        Logger.log(LogLevel.INFO, "Audio data loaded successfully.")
         return audio_data
