@@ -12,7 +12,6 @@ setuptools~=78.1.1
 transformers~=4.52.1
 
 # Model dependencies
-librosa~=0.11.0
 torch~=2.7.1
 
 # Project Modules
