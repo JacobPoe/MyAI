@@ -17,7 +17,13 @@ With this in mind I built on my original app.py and implemented the following:
 
 # How to start the project:
 * TODO: Section about starting the web client
+  * install npm
+  * `npm install`
+  * `npm run start`
 * TODO: Section about starting the server
+  * install python
+  * set up python venv
+  * pip install -r requirements.txt
 * TODO: Section about Docker deployment
 
 # Environment Variables
