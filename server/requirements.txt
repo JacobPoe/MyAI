@@ -3,7 +3,6 @@
 # Project dependencies
 Flask~=3.0.3
 Flask-Cors~=5.0.0
-gradio~=4.44.1
 numpy~=1.26.4
 pillow~=10.4.0
 pydub~=0.25.1
