@@ -26,26 +26,9 @@ With this in mind I built on my original app.py and implemented the following:
 | DEBUG                  | True                                                  | Enable or disable debug mode                    |
 | SERVER_HOST            | 0.0.0.0                                               | Server address where local app is hosted        |
 | SERVER_PORT            | 1587                                                  | Port number for your local application instance |
-| ROUTE_STT              | /api/v1/stt                                           | Endpoint for speech-to-text API                 |
+| ROUTE_ASR              | /api/v1/ASR                                           | Endpoint for automatic-speech-recognition API                 |
 | ROUTE_TTS              | /api/v1/tts                                           | Endpoint for text-to-speech API                 |
-| STT_COMPUTATION_DEVICE | 0                                                     | Device index for stt computation (e.g., GPU)    |
+| STT_COMPUTATION_DEVICE | cpu                                                   | Device index for stt computation (e.g., GPU)    |
 | STT_SAMPLE_RATE        | 16000                                                 | Sample rate for speech-to-text processing       |
-
-# NOTE: gradio.py
-
-This file serves as one giant TODO
-
-The IBM AI Developer certification course often conducts its labs via Gradio interfaces. This file is meant to
-serve as a container for all the different Gradio exercises the course has offered, with the intention of refactoring 
-these Gradio interfaces into React components in the future. 
-
-To run any Gradio project, at the root of the repo run the command `python server/gradio.py`
-
-- This command will prompt the user to select one of three Gradio projects:
-  - Text-to-Speech
-  - Speech-to-Text
-  - Image Captioning
-
-Once the chosen application is running, navigate to `http://0.0.0.0:1587`.
 
 Have fun!

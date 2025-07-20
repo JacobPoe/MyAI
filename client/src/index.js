@@ -5,7 +5,7 @@ import { createRoot } from "react-dom/client";
 
 const VoiceAssistant = () => {
   const [message, setMessage] = useState("");
-  const [requestAudioResponses, setRequestAudioResponses] = useState(false);
+  const [requestNarratedResponse, setRequestNarratedResponse] = useState(false);
   const [recording, setRecording] = useState(false);
   const [voiceOption, setVoiceOption] = useState("default");
   const [lightMode, setLightMode] = useState(true);
@@ -14,13 +14,14 @@ const VoiceAssistant = () => {
   const recorderRef = useRef(null);
   const baseUrl = 'http://localhost:1587';
 
-  const handleAudioInput = async (userRecording) => {
+  const handleAudioInput = async (userRecording, mode) => {
     // Create an obj of type FormData() to send both the audio and the generateAudioResponses flag
     const requestBody = new FormData();
-    requestBody.append("requestAudioResponses", requestAudioResponses);
-    requestBody.append("wav", userRecording.audioBlob, "audio.wav");
+    requestBody.append("narrateResponse", requestNarratedResponse);
+    requestBody.append("mode", mode);
+    requestBody.append("audio", userRecording.audioBlob, "audio.wav");
 
-    const response = await fetch(`${baseUrl}/api/v1/stt`, {
+    const response = await fetch(`${baseUrl}/api/v1/asr`, {
       method: "POST",
       body: requestBody
     });
@@ -54,7 +55,7 @@ const VoiceAssistant = () => {
 
     const response = await fetch(`${baseUrl}/api/v1/tts`, {
       method: "POST",
-      body: JSON.stringify({ userMessage: message, voice: voiceOption, generateAudioResponses: requestAudioResponses }),
+      body: JSON.stringify({ userMessage: message, voice: voiceOption, narrateResponse: requestNarratedResponse, mode: "question" }),
       headers: { "Content-Type": "application/json" },
     });
     const data = await response.json();
@@ -77,7 +78,7 @@ const VoiceAssistant = () => {
       .replace(/[<>&;]/g, "");
   };
   const toggleLightMode = () => setLightMode(!lightMode);
-  const toggleRecording = async () => {
+  const toggleRecording = async (mode) => {
     const isRecording = !recording;
     setRecording(isRecording);
 
@@ -88,7 +89,7 @@ const VoiceAssistant = () => {
     } else {
       // Stop recording and process audio
       const audio = await recorderRef.current.stop();
-      await handleAudioInput(audio);
+      await handleAudioInput(audio, mode);
     }
   };
 
@@ -121,8 +122,8 @@ const VoiceAssistant = () => {
               <div className="col-12">
                 <input
                     type="checkbox"
-                    checked={requestAudioResponses}
-                    onChange={(e) => setRequestAudioResponses(e.target.checked)}
+                    checked={requestNarratedResponse}
+                    onChange={(e) => setRequestNarratedResponse(e.target.checked)}
                 />
               </div>
               Request TTS replies (this will significantly increase response times and resource consumption).
@@ -141,9 +142,14 @@ const VoiceAssistant = () => {
                 </button>
               </div>
 
-              {/*<button onClick={toggleRecording} className="btn btn-primary">*/}
-              {/*  {recording ? <i className="fa fa-stop">[STOP]</i> : <i className="fa fa-microphone">[RECORD]</i>}*/}
-              {/*</button>*/}
+              {/* TODO: disable buttons while recording */}
+              <button onClick={() => toggleRecording("question")} className="btn btn-primary">
+                {recording ? <i className="fa fa-stop">[STOP]</i> : <i className="fa fa-microphone">[ASK]</i>}
+              </button>
+
+              <button onClick={() => toggleRecording("transcribe")} className="btn btn-primary">
+                {recording ? <i className="fa fa-stop">[STOP]</i> : <i className="fa fa-microphone">[TRANSCRIBE]</i>}
+              </button>
             </div>
           </div>
         </div>

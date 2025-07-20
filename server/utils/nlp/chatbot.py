@@ -2,13 +2,11 @@ import io
 import json
 import scipy
 import time
-import torch
 
-from flask import jsonify
 from pydub import AudioSegment
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, pipeline, set_seed
 
-from utils.enums import LogLevel, Models, Tasks, PipelineFrameworks
+from utils.enums import AudioRequestMode, LogLevel, Models, Tasks, PipelineFrameworks
 from utils.logger import Logger
 from utils.nlp.synthesizer import Synthesizer
 
@@ -18,13 +16,6 @@ tokenizer: GPT2Tokenizer
 log_level: LogLevel = LogLevel.CHATBOT
 conversation_history: list
 
-Logger.log(LogLevel.INFO, "Loading STT pipeline...")
-stt_pipeline = pipeline(
-    Tasks.ASR.value,
-    Models.WHISPER_LARGE_V3_TURBO.value,
-    torch_dtype=torch.float32,
-)
-Logger.log(LogLevel.INFO, "STT pipeline loaded successfully.")
 
 
 class Chatbot:
@@ -83,37 +74,30 @@ class Chatbot:
         return output
 
     def handle_audio_prompt(self, request):
-        Logger.log(LogLevel.INFO, "Processing audio prompt")
+        request_type = request.form.get("mode")
+        Logger.log(LogLevel.INFO, f"Processing audio prompt of type '{request_type}'")
 
-        request_audio = request.files.get("wav").read()
-        audio_buffer = io.BytesIO(request_audio)
-        wav_buffer = io.BytesIO()
+        assert request_type is not None, "Request mode must be specified."
+        assert AudioRequestMode(request_type), "Invalid request mode specified."
 
-        audio = AudioSegment.from_file(audio_buffer)
-        audio.export(wav_buffer, format="wav")
-        wav_buffer.seek(0)
+        reply, narration = None, None
 
-        # Read the audio data from the wav_buffer
-        sampling_rate, audio_data = scipy.io.wavfile.read(wav_buffer)
+        # Load the raw audio data from the request and transcribe it
+        audio_data = Chatbot.load_request_audio(request)
+        request_transcription = Synthesizer.stt_pipeline(audio_data)
 
-        # Pass the audio data to the whisper pipeline
-        transcription = stt_pipeline(audio_data)
-        Logger.log(LogLevel.INFO, f"STT transcription: {transcription}")
+        # If the request is a question, generate a reply from the model using the input transcription as a prompt
+        if request.form.get("mode") == AudioRequestMode.QUESTION.value:
+            reply = self.generate_reply(request_transcription)
 
-        reply = self.generate_reply(transcription["text"])
-        Logger.log(LogLevel.INFO, f"Chatbot reply: {reply}")
+        if request.form.get("narrateResponse") == "true":
+            narration = Synthesizer.generate_audio(reply)
 
-        audio_base64 = None
-        if request.form.get("requestAudioResponses"):
-            audio_base64 = Synthesizer.generate_audio(reply)
-
-        return jsonify(
-            {
-                "transcription": transcription,
-                "reply": reply,
-                "audio": audio_base64,
-            }
-        )
+        return {
+            "transcription": request_transcription,
+            "reply": reply,
+            "audio": narration
+        }
 
     def handle_text_prompt(self, request):
         Logger.log(LogLevel.INFO, "Processing text prompt")
@@ -128,7 +112,22 @@ class Chatbot:
         audio_base64 = None
 
         # If the user requested an STT response
-        if data["generateAudioResponses"]:
+        if data["narrateResponse"]:
             audio_base64 = Synthesizer.generate_audio(transcript)
 
-        return jsonify({"text": transcript, "audio": audio_base64})
+        return {"text": transcript, "audio": audio_base64}
+
+    @staticmethod
+    def load_request_audio(request):
+        request_audio = request.files.get("audio").read()
+        audio_buffer = io.BytesIO(request_audio)
+        wav_buffer = io.BytesIO()
+
+        audio = AudioSegment.from_file(audio_buffer)
+        audio.export(wav_buffer, format="wav")
+        wav_buffer.seek(0)
+
+        # Read the audio data from the wav_buffer
+        sampling_rate, audio_data = scipy.io.wavfile.read(wav_buffer)
+        return audio_data
+

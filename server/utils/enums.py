@@ -1,11 +1,15 @@
 from enum import Enum
 
+class AudioRequestMode(Enum):
+    QUESTION = "question"
+    TRANSCRIBE = "transcribe"
 
 class LogLevel(Enum):
     CAPTION = "CAPTION"
     CHATBOT = "CH@"
     ERROR = "ERROR"
     INFO = "INFO"
+    SYNTHESIZER = "SYNTHESIZER"
 
 
 # Huggingface model documentation can be found by appending the model name to https://huggingface.co/

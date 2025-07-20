@@ -11,10 +11,10 @@ from utils.nlp.chatbot import Chatbot
 # Load and configure environment variables
 load_dotenv()
 DEBUG = os.getenv("DEBUG")
-ROUTE_STT = os.getenv("ROUTE_STT")
-ROUTE_TTS = os.getenv("ROUTE_TTS")
-SERVER_PORT = os.getenv("SERVER_PORT")
-SERVER_HOST = os.getenv("SERVER_HOST")
+ROUTE_ASR = os.getenv("ROUTE_ASR", "/api/v1/asr")
+ROUTE_TTS = os.getenv("ROUTE_TTS", "/api/v1/tts")
+SERVER_PORT = os.getenv("SERVER_PORT", 5000)
+SERVER_HOST = os.getenv("SERVER_HOST", "0.0.0.0")
 
 # Initialize the chatbot instance
 chatbot = Chatbot()
@@ -28,7 +28,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 ### POSTs
 ####################################################################################################
-@app.route(ROUTE_STT, methods=["POST"])
+@app.route(ROUTE_ASR, methods=["POST"])
 def route_audio_prompt():
     try:
         response = chatbot.handle_audio_prompt(request)
