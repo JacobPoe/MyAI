@@ -3,7 +3,7 @@ import os
 
 from datetime import datetime
 
-from enums.enums import LogLevel
+from utils.enums import LogLevel
 
 
 class Logger:
@@ -17,11 +17,13 @@ class Logger:
         Logger.log(LogLevel.INFO, "Saving conversation history...")
 
         # Ensure the history directory exists
-        os.makedirs(f"history/{level.value}", exist_ok=True)
+        os.makedirs(f"prompts/history/{level.value}", exist_ok=True)
 
         # Define the file path
         timestamp = datetime.now().strftime("%Y-%m-%d__%H-%M-%S")
-        file_path = os.path.join(f"history/{level.value}", timestamp + ".json")
+        file_path = os.path.join(
+            f"prompts/history/{level.value}", timestamp + ".json"
+        )
 
         # Write the conversation history to the JSON file
         with open(file_path, "w") as f:

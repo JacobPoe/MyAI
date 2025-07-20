@@ -3,8 +3,8 @@ import numpy as np
 from PIL import Image
 from transformers import BlipProcessor, BlipForConditionalGeneration
 
-from enums.enums import LogLevel
-from logger.logger import Logger
+from utils.enums import LogLevel, PipelineFrameworks
+from utils.logger import Logger
 
 log_level: LogLevel = LogLevel.CAPTION
 
@@ -31,9 +31,11 @@ class Captioner:
 
     def analyze_img(self, image: np.ndarray):
         # unconditional image captioning
-        inputs = processor(image, return_tensors="pt")
+        inputs = processor(
+            image, return_tensors=PipelineFrameworks.PYTORCH.value
+        )
         out = self.model.generate(**inputs)
-        to_return = self.processor.decode(out[0], skip_special_tokens=True)
+        to_return = self.processor.decode(out[0], skip_special_tokens=False)
         Logger.log(log_level, to_return)
         self.conversation_history.append("[analyze_img] ::" + to_return)
 
@@ -43,10 +45,12 @@ class Captioner:
         image = Image.fromarray(data).convert("RGB")
 
         text = "This is a photo of"
-        inputs = self.processor(image, text, return_tensors="pt")
+        inputs = self.processor(
+            image, text, return_tensors=PipelineFrameworks.PYTORCH.value
+        )
 
         out = self.model.generate(**inputs)
-        toReturn = self.processor.decode(out[0], skip_special_tokens=True)
+        toReturn = self.processor.decode(out[0], skip_special_tokens=False)
         Logger.log(log_level, toReturn)
         self.conversation_history.append("[caption_img] ::" + toReturn)
 
