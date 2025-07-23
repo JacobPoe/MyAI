@@ -1,5 +1,5 @@
 import {SanitizerService} from "../../services/sanitizer.service";
-import React, {useState} from "react";
+import React from "react";
 
 const InputText = (props) => {
     return (
