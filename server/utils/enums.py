@@ -9,6 +9,7 @@ class AudioRequestMode(Enum):
 class LogLevel(Enum):
     CAPTION = "CAPTION"
     CHATBOT = "CH@"
+    DEBUG = "DEBUG"
     ERROR = "ERROR"
     INFO = "INFO"
     SYNTHESIZER = "SYNTHESIZER"

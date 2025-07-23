@@ -10,14 +10,15 @@ from utils.nlp.chatbot import Chatbot
 
 # Load and configure environment variables
 load_dotenv()
-DEBUG = os.getenv("DEBUG")
+_DEBUG = os.getenv("DEBUG")
+DEBUG = _DEBUG.lower() == "true" if _DEBUG else False
 ROUTE_ASR = os.getenv("ROUTE_ASR", "/api/v1/asr")
 ROUTE_TTS = os.getenv("ROUTE_TTS", "/api/v1/tts")
 SERVER_PORT = os.getenv("SERVER_PORT", 5000)
 SERVER_HOST = os.getenv("SERVER_HOST", "0.0.0.0")
 
 # Initialize the chatbot instance
-chatbot = Chatbot()
+chatbot = Chatbot(DEBUG)
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -51,4 +52,4 @@ def route_text_prompt():
 ### Main
 ####################################################################################################
 if __name__ == "__main__":
-    app.run(port=SERVER_PORT, host=SERVER_HOST)
+    app.run(port=SERVER_PORT, host=SERVER_HOST, debug=DEBUG, use_reloader=False)
