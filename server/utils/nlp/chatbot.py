@@ -21,11 +21,12 @@ tokenizer: GPT2Tokenizer
 
 log_level: LogLevel = LogLevel.CHATBOT
 conversation_history: list
-
+DEBUG: bool
 
 class Chatbot:
-    def __init__(self):
+    def __init__(self, debug: bool = False):
         Logger.log(log_level, "Initializing Chatbot...")
+        self.DEBUG = debug
 
         self.tokenizer = GPT2Tokenizer.from_pretrained(Models.GPT2.value)
         self.model = GPT2LMHeadModel.from_pretrained(Models.GPT2.value)
@@ -90,7 +91,7 @@ class Chatbot:
         reply, narration = None, None
 
         # Load the raw audio data from the request and transcribe it
-        audio_data = Chatbot.load_request_audio(request)
+        audio_data = self.load_request_audio(request)
         request_transcription = Synthesizer.stt_pipeline(audio_data)
 
         # If the request is a question, generate a reply from the model using the input transcription as a prompt
@@ -124,8 +125,7 @@ class Chatbot:
 
         return {"text": transcript, "audio": audio_base64}
 
-    @staticmethod
-    def load_request_audio(request):
+    def load_request_audio(self, request):
         Logger.log(LogLevel.INFO, "Loading audio data from request...")
         request_audio = request.files.get("audio").read()
         audio_buffer = io.BytesIO(request_audio)
@@ -135,7 +135,14 @@ class Chatbot:
         audio.export(wav_buffer, format="wav")
         wav_buffer.seek(0)
 
+        if self.DEBUG:
+            Logger.log(LogLevel.DEBUG, "Saving audio data to debug.raw")
+            with open("debug.raw", "wb") as f:
+                f.write(audio_buffer.read())
+
         # Read the audio data from the wav_buffer
         sampling_rate, audio_data = scipy.io.wavfile.read(wav_buffer)
         Logger.log(LogLevel.INFO, "Audio data loaded successfully.")
+
+        wav_buffer.close()
         return audio_data
