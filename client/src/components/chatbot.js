@@ -23,7 +23,14 @@ const Chatbot = (props) => {
             />
             <div className="input-group mt-1">
                 <InputText id={"prompt-chatbot"} text={message} onChangeHandler={setMessage} />
-                <Button onClickHandler={() => IOService.postTextPrompt(message)} />
+                <Button onClickHandler={async () => {
+                    setMessages(prevMessages => [...prevMessages, {text: message, type: 'user'}]);
+                    setMessage("");
+                    await IOService.postTextPrompt({message, requestNarratedResponses})
+                        .then((response) => {
+                            setMessages(prevMessages => [...prevMessages, {text: response, type: 'bot'}]);
+                        })
+                }} />
             </div>
             <div className="input-group-append">
                 <AudioRecorder

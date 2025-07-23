@@ -8,7 +8,7 @@ const ChatWindow = (props) => {
                 {props.messages?.map((msg, index) => (
                     <div key={index} className={`message-line ${msg.type}`}>
                         <div className={`message-box ${msg.type === "bot" ? "bot-text" : ""}`}>
-                            {msg.content}
+                            {msg.text}
                         </div>
                     </div>
                 ))}
