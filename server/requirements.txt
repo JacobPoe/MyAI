@@ -16,6 +16,7 @@ torch~=2.7.1
 
 # Project Modules
 -e utils
+-e services
 
 # Linting tools
 black
