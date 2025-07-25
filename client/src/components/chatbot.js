@@ -1,10 +1,12 @@
+import React, {useState} from "react";
+
+import { IOService } from "../services/io.service";
+
+import AudioRecorder from "./audio-recorder";
 import ChatWindow from "./controls/chatWindow";
+import InputCheckbox from "./controls/input.checkbox";
 import InputText from "./controls/input.text";
 import Button from "./controls/button";
-import {IOService} from "../services/io.service";
-import AudioRecorder from "./audio-recorder";
-import React, {useState} from "react";
-import InputCheckbox from "./controls/input.checkbox";
 
 const ttsWarningMsg = "Request TTS replies (this will significantly increase response times and resource consumption).";
 
@@ -33,16 +35,8 @@ const Chatbot = (props) => {
                 }} />
             </div>
             <div className="input-group-append">
-                <AudioRecorder
-                    callback={() => IOService.postAudioPrompt()}
-                    mode="question"
-                    text="QUESTION"
-                />
-                <AudioRecorder
-                    callback={() => IOService.postAudioPrompt()}
-                    mode="transcribe"
-                    text="TRANSCRIBE"
-                />
+                <AudioRecorder mode="question" text="QUESTION" />
+                <AudioRecorder mode="transcribe"  text="TRANSCRIBE" />
             </div>
         </div>
     )

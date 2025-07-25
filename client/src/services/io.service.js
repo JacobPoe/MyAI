@@ -12,7 +12,7 @@ const handleAudioPlayback = async (data) => {
     });
     audio.play().catch(error => console.error('Error playing audio:', error));
     return audio;
-}
+};
 
 const postTextPrompt = async (data) => {
     const response = await HTTPService.post({
@@ -46,8 +46,44 @@ const postAudioPrompt = async (audioBlob, mode, requestNarratedResponse) => {
     }
 };
 
+const startRecordingAudio = (mediaRecorderRef, audioChunksRef) => {
+    audioChunksRef.current = [];
+
+    return navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+        mediaRecorderRef.current = new MediaRecorder(stream);
+        if (!mediaRecorderRef.current) {
+            throw new Error("MediaRecorder is not supported in this browser.");
+        }
+
+        mediaRecorderRef.current.ondataavailable = (event) => {
+            audioChunksRef.current.push(event.data);
+        }
+
+        mediaRecorderRef.current.start();
+    }).catch(error => {
+        console.error("Error accessing media devices:", error);
+        throw error;
+    });
+};
+
+const stopRecordingAudio = async (mediaRecorderRef, audioChunksRef) => {
+    return new Promise((resolve) => {
+        mediaRecorderRef.current.onstop = () => {
+            const blob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+            resolve(blob);
+
+            // Stop all tracks in the stream
+            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+        };
+
+        mediaRecorderRef.current.stop();
+    });
+};
+
 export const IOService = {
     handleAudioPlayback,
     postTextPrompt,
-    postAudioPrompt
+    postAudioPrompt,
+    startRecordingAudio,
+    stopRecordingAudio
 };
