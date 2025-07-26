@@ -99,23 +99,24 @@ class Chatbot:
             headers.get("mode")
         ), "Invalid request mode specified."
 
-        reply, narration = None, None
+        reply, audio, transcription = None, None, None
 
         # Load the raw audio data from the request and transcribe it
+        # TODO: Do I need to transcribe audio to text first in order to provide a prompt to call self.generate_reply?
         audio_data = self.load_request_audio(request.data)
         request_transcription = Synthesizer.stt_pipeline(audio_data)
 
         # If the request is a question, generate a reply from the model using the input transcription as a prompt
         if headers.get("mode") == AudioRequestMode.QUESTION.value:
-            reply = self.generate_reply(request_transcription["text"])
+            reply = self.generate_reply(request_transcription.get("text", ""))
 
         if headers.get("narrateResponse") == "true":
-            narration = Synthesizer.generate_audio(reply)
+            audio = Synthesizer.generate_audio(reply)
 
         return {
-            "transcription": request_transcription["text"],
             "reply": reply,
-            "audio": narration,
+            "audio": audio,
+            "transcription": request_transcription.get("text", "")
         }
 
     def handle_text_prompt(self, request):
@@ -136,15 +137,15 @@ class Chatbot:
             Logger.log(LogLevel.DEBUG, f"Request headers: {headers}")
 
         # Generate the reply and save it to the response
-        transcript = self.generate_reply(headers.get("userMessage"))
+        reply = self.generate_reply(headers.get("userMessage"))
         # Return no audio data unless requested
         audio_base64 = None
 
         # If the user requested an STT response
         if headers.get("narrateResponse") == "true":
-            audio_base64 = Synthesizer.generate_audio(transcript)
+            audio_base64 = Synthesizer.generate_audio(reply)
 
-        return {"text": transcript, "audio": audio_base64}
+        return {"reply": reply, "audio": audio_base64}
 
     def load_request_audio(self, data):
         Logger.log(LogLevel.INFO, "Loading audio data from request...")
