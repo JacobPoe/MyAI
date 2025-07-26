@@ -17,11 +17,12 @@ const handleAudioPlayback = async (data) => {
 const postTextPrompt = async (props) => {
     const response = await HTTPService.post({
         endpoint: 'api/v1/tts',
-        headers: { "Content-Type": "application/json" },
         params: {
-            "userMessage": props.message || "",
             "narrateResponse": props.requestNarratedResponses || false,
             "mode": props.mode || "question"
+        },
+        formData: {
+            "userMessage": props.message || ""
         }
     });
 
