@@ -2,7 +2,7 @@ import { HTTPService } from "./http.service";
 
 const handleAudioPlayback = async (data) => {
     const df = document.createDocumentFragment();
-    const blob = new Blob([Uint8Array.from(atob(data), c => c.charCodeAt(0))], { type: 'audio/wav' });
+    const blob = data.blob ? data.blob : new Blob([Uint8Array.from(atob(data.audio), c => c.charCodeAt(0))], { type: 'audio/wav' });
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
 
@@ -14,35 +14,46 @@ const handleAudioPlayback = async (data) => {
     return audio;
 };
 
-const postTextPrompt = async (data) => {
+const postTextPrompt = async (props) => {
     const response = await HTTPService.post({
-        endpoint: '/api/v1/tts',
-        body: JSON.stringify({ userMessage: data.message, narrateResponse: data.requestNarratedResponses, mode: "question" }),
-        headers: { "Content-Type": "application/json" }
+        endpoint: 'api/v1/tts',
+        headers: { "Content-Type": "application/json" },
+        params: {
+            "userMessage": props.message || "",
+            "narrateResponse": props.requestNarratedResponses || false,
+            "mode": props.mode || "question"
+        }
     });
 
     if (response.audio) {
-        await IOService.handleAudioPlayback(response.audio);
+        await handleAudioPlayback(response);
     }
 
-    return response.text;
+    return {
+        text: response.reply || ""
+    };
 };
 
-const postAudioPrompt = async (audioBlob, mode, requestNarratedResponse) => {
-    // Create an obj of type FormData() to send both the audio and the generateAudioResponses flag
-    const requestBody = new FormData();
-    requestBody.append("narrateResponse", requestNarratedResponse);
-    requestBody.append("mode", mode);
-    requestBody.append("audio", audioBlob, "audio.wav");
-
+const postAudioPrompt = async (data, props) => {
     const response = await HTTPService.post({
         endpoint: "api/v1/asr",
-        body: requestBody,
-        headers: { "Accept": "application/json" }
+        body: data,
+        headers: {
+            "Content-Type": "audio/wav"
+        },
+        params: {
+            "narrateResponse": props.requestNarratedResponses || false,
+            "mode": props.mode || "question"
+        }
     });
 
     if (response.audio) {
-        await IOService.handleAudioPlayback(response.audio);
+        await handleAudioPlayback(response);
+    }
+
+    return {
+        text: response.reply || "",
+        transcription: response.transcription || "",
     }
 };
 
@@ -68,9 +79,14 @@ const startRecordingAudio = (mediaRecorderRef, audioChunksRef) => {
 
 const stopRecordingAudio = async (mediaRecorderRef, audioChunksRef) => {
     return new Promise((resolve) => {
-        mediaRecorderRef.current.onstop = () => {
+        mediaRecorderRef.current.onstop = async () => {
             const blob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
             resolve(blob);
+
+            // TODO: Great global debug flag to control this
+            // play back audio for debugging purposes
+            // await handleAudioPlayback({ blob: blob })
+            //     .catch(error => console.error('Error playing audio:', error));
 
             // Stop all tracks in the stream
             mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
@@ -81,9 +97,8 @@ const stopRecordingAudio = async (mediaRecorderRef, audioChunksRef) => {
 };
 
 export const IOService = {
-    handleAudioPlayback,
-    postTextPrompt,
     postAudioPrompt,
+    postTextPrompt,
     startRecordingAudio,
     stopRecordingAudio
 };

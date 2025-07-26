@@ -29,3 +29,4 @@ history/
 .env
 *.mp3
 *.wav
+*.raw

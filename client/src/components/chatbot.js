@@ -15,6 +15,15 @@ const Chatbot = (props) => {
     const [messages, setMessages] = React.useState([]);
     const [requestNarratedResponses, setRequestNarratedResponses] = useState(false);
 
+    const submitTextPrompt = async () => {
+        setMessages(prevMessages => [...prevMessages, {text: message, type: 'user'}]);
+        setMessage("");
+        await IOService.postTextPrompt({message, requestNarratedResponses})
+            .then((response) => {
+                setMessages(prevMessages => [...prevMessages, {text: response.text, type: 'bot'}]);
+            })
+    }
+
     return (
         <div id={ props.id ? props.id : '' + "--chatbot-view" } className="row">
             <ChatWindow id={props.id} messages={messages} />
@@ -25,18 +34,11 @@ const Chatbot = (props) => {
             />
             <div className="input-group mt-1">
                 <InputText id={"prompt-chatbot"} text={message} onChangeHandler={setMessage} />
-                <Button onClickHandler={async () => {
-                    setMessages(prevMessages => [...prevMessages, {text: message, type: 'user'}]);
-                    setMessage("");
-                    await IOService.postTextPrompt({message, requestNarratedResponses})
-                        .then((response) => {
-                            setMessages(prevMessages => [...prevMessages, {text: response, type: 'bot'}]);
-                        })
-                }} />
+                <Button onClickHandler={submitTextPrompt} />
             </div>
             <div className="input-group-append">
-                <AudioRecorder mode="question" text="QUESTION" />
-                <AudioRecorder mode="transcribe"  text="TRANSCRIBE" />
+                <AudioRecorder requestNarratedResponses={requestNarratedResponses} setMessagesRef={setMessages} mode="question" text="QUESTION" />
+                <AudioRecorder requestNarratedResponses={requestNarratedResponses} setMessagesRef={setMessages} mode="transcribe"  text="TRANSCRIBE" />
             </div>
         </div>
     )

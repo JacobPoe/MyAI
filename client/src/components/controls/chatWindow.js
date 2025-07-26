@@ -6,10 +6,19 @@ const ChatWindow = (props) => {
         <div className="col-12">
             <div id="chat-window">
                 {props.messages?.map((msg, index) => (
-                    <div key={index} className={`message-line ${msg.type}`}>
-                        <div className={`message-box ${msg.type === "bot" ? "bot-text" : ""}`}>
-                            {msg.text}
-                        </div>
+                    <div key={index} className={`row message-line ${msg.type}`}>
+                        {msg.text && (
+                            <div className={`message-box ${msg.type === "bot" ? "bot-text" : ""}`}>
+                                {msg.text}
+                            </div>
+                            )
+                        }
+                        {msg.transcription && (
+                            <div className={`transcription-box ${msg.type === "bot" ? "bot-text" : ""}`}>
+                                <strong>Transcription:</strong> {msg.transcription}
+                            </div>
+                            )
+                        }
                     </div>
                 ))}
             </div>
