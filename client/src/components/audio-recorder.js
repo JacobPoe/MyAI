@@ -26,7 +26,9 @@ const AudioRecorder = (props) => {
                             {
                                 mode: props.mode,
                                 requestNarratedResponses: props.requestNarratedResponses
-                            })
+                            }).then((response) => {
+                                props.setMessagesRef(prevMessages => [...prevMessages, {text: response.text, transcription: response.transcription, type: 'bot'}])
+                        })
                     });
             } else {
                 await IOService.startRecordingAudio(mediaRecorderRef, audioChunksRef);

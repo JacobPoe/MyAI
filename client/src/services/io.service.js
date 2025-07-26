@@ -29,7 +29,9 @@ const postTextPrompt = async (props) => {
         await handleAudioPlayback(response);
     }
 
-    return response.text;
+    return {
+        text: response.reply || ""
+    };
 };
 
 const postAudioPrompt = async (data, props) => {
@@ -46,7 +48,12 @@ const postAudioPrompt = async (data, props) => {
     });
 
     if (response.audio) {
-        await handleAudioPlayback(response.audio);
+        await handleAudioPlayback(response);
+    }
+
+    return {
+        text: response.reply || "",
+        transcription: response.transcription || "",
     }
 };
 
