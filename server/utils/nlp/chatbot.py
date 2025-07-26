@@ -1,10 +1,11 @@
 import io
-import json
 import scipy
 import time
 
 from pydub import AudioSegment
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, pipeline, set_seed
+
+from services.sanitize import Sanitize
 
 from utils.enums import (
     AudioRequestMode,
@@ -16,12 +17,14 @@ from utils.enums import (
 from utils.logger import Logger
 from utils.nlp.synthesizer import Synthesizer
 
+
 model: GPT2LMHeadModel
 tokenizer: GPT2Tokenizer
 
 log_level: LogLevel = LogLevel.CHATBOT
 conversation_history: list
 DEBUG: bool
+
 
 class Chatbot:
     def __init__(self, debug: bool = False):
@@ -80,25 +83,33 @@ class Chatbot:
         return output
 
     def handle_audio_prompt(self, request):
-        request_type = request.form.get("mode")
+        headers = Sanitize.decode_headers(request.query_string)
         Logger.log(
-            LogLevel.INFO, f"Handling audio prompt of type '{request_type}'"
+            LogLevel.INFO,
+            f"Handling audio prompt of type '{headers.get("mode")}'",
         )
 
-        assert request_type is not None, "Request mode must be specified."
-        assert AudioRequestMode(request_type), "Invalid request mode specified."
+        if self.DEBUG:
+            Logger.log(LogLevel.DEBUG, f"Request headers: {headers}")
+
+        assert (
+            headers.get("mode") is not None
+        ), "Request mode must be specified."
+        assert AudioRequestMode(
+            headers.get("mode")
+        ), "Invalid request mode specified."
 
         reply, narration = None, None
 
         # Load the raw audio data from the request and transcribe it
-        audio_data = self.load_request_audio(request)
+        audio_data = self.load_request_audio(request.data)
         request_transcription = Synthesizer.stt_pipeline(audio_data)
 
         # If the request is a question, generate a reply from the model using the input transcription as a prompt
-        if request.form.get("mode") == AudioRequestMode.QUESTION.value:
+        if headers.get("mode") == AudioRequestMode.QUESTION.value:
             reply = self.generate_reply(request_transcription["text"])
 
-        if request.form.get("narrateResponse") == "true":
+        if headers.get("narrateResponse") == "true":
             narration = Synthesizer.generate_audio(reply)
 
         return {
@@ -110,25 +121,34 @@ class Chatbot:
     def handle_text_prompt(self, request):
         Logger.log(LogLevel.INFO, "Handling text prompt")
 
-        # Decode the request
-        decoded_request = request.data.decode("utf-8")
-        data = json.loads(decoded_request)
+        headers = Sanitize.decode_headers(request.query_string)
+        assert (
+            headers.get("userMessage") is not None
+        ), "User message must be provided."
+        assert (
+            headers.get("mode") is not None
+        ), "Request mode must be specified."
+        assert AudioRequestMode(
+            headers.get("mode")
+        ), "Invalid request mode specified."
+
+        if self.DEBUG:
+            Logger.log(LogLevel.DEBUG, f"Request headers: {headers}")
 
         # Generate the reply and save it to the response
-        transcript = self.generate_reply(data["userMessage"])
+        transcript = self.generate_reply(headers.get("userMessage"))
         # Return no audio data unless requested
         audio_base64 = None
 
         # If the user requested an STT response
-        if data["narrateResponse"]:
+        if headers.get("narrateResponse") == "true":
             audio_base64 = Synthesizer.generate_audio(transcript)
 
         return {"text": transcript, "audio": audio_base64}
 
-    def load_request_audio(self, request):
+    def load_request_audio(self, data):
         Logger.log(LogLevel.INFO, "Loading audio data from request...")
-        request_audio = request.files.get("audio").read()
-        audio_buffer = io.BytesIO(request_audio)
+        audio_buffer = io.BytesIO(data)
         wav_buffer = io.BytesIO()
 
         audio = AudioSegment.from_file(audio_buffer)
