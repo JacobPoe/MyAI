@@ -124,7 +124,7 @@ class Chatbot:
 
         headers = Sanitize.decode_headers(request.query_string)
         assert (
-            headers.get("userMessage") is not None
+            request.form.get("userMessage") is not None
         ), "User message must be provided."
         assert (
             headers.get("mode") is not None
@@ -137,7 +137,7 @@ class Chatbot:
             Logger.log(LogLevel.DEBUG, f"Request headers: {headers}")
 
         # Generate the reply and save it to the response
-        reply = self.generate_reply(headers.get("userMessage"))
+        reply = self.generate_reply(request.form.get("userMessage"))
         # Return no audio data unless requested
         audio_base64 = None
 
