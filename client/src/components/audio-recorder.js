@@ -1,6 +1,5 @@
 import React, { useState, useRef } from "react";
 
-import { HTTPService } from "../services/http.service";
 import { IOService } from "../services/io.service";
 
 const AudioRecorder = (props) => {
@@ -18,15 +17,16 @@ const AudioRecorder = (props) => {
             if (recording) {
                 await IOService.stopRecordingAudio(mediaRecorderRef, audioChunksRef)
                     .then(async (data) => {
-                        await HTTPService.post({
-                            baseUrl: props.baseUrl || 'http://localhost:1587',
-                            endpoint: "api/v1/asr",
-                            body: data,
-                            params: {
-                                "narrateResponse": props.requestNarratedResponses || false,
-                                "mode": props.mode || "question"
-                            }
-                        });
+                        if (data.size === 0) {
+                            alert("No audio recorded.");
+                            setRecording(false);
+                            return;
+                        }
+                        await IOService.postAudioPrompt(data,
+                            {
+                                mode: props.mode,
+                                requestNarratedResponses: props.requestNarratedResponses
+                            })
                     });
             } else {
                 await IOService.startRecordingAudio(mediaRecorderRef, audioChunksRef);
