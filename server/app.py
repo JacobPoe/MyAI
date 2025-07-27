@@ -6,7 +6,6 @@ from services.env import EnvService, EnvVars
 from utils.enums import LogLevel
 from utils.logger import Logger
 from utils.nlp.model import Model
-from utils.nlp.trainer import Trainer
 
 DEBUG = EnvService.is_debug()
 ROUTE_ASR = EnvService.get(EnvVars.ROUTE_ASR.value)
@@ -15,9 +14,8 @@ ROUTE_TTS = EnvService.get(EnvVars.ROUTE_TTS.value)
 SERVER_HOST = EnvService.get(EnvVars.SERVER_HOST.value)
 SERVER_PORT = EnvService.get(EnvVars.SERVER_PORT.value)
 
-# Initialize the LLM instance and trainer
+# Initialize the LLM instance
 model = Model(DEBUG)
-trainer = Trainer(model.model, model.tokenizer)
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -25,14 +23,6 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 ### GETs
 ####################################################################################################
-@app.route(ROUTE_TRAINING, methods=["GET"])
-def route_training():
-    try:
-        trainer.init_training()
-        return 200
-    except Exception as e:
-        Logger.log(LogLevel.ERROR, f"Error processing training request, {e}")
-        return jsonify({"error": str(e)}), 500
 
 
 ### POSTs
