@@ -6,13 +6,21 @@ class AudioRequestMode(Enum):
     TRANSCRIBE = "transcribe"
 
 
+# Huggingface datasets can be found at https://huggingface.co/datasets
+# Ex. https://huggingface.co/datasets/MegaScience/MegaScience
+class Dataset(Enum):
+    MEGASCIENCE = "MegaScience/MegaScience"
+
+
 class LogLevel(Enum):
     CAPTION = "CAPTION"
-    CHATBOT = "CH@"
+    DATA = "DATA"
     DEBUG = "DEBUG"
     ERROR = "ERROR"
     INFO = "INFO"
-    SYNTHESIZER = "SYNTHESIZER"
+    MODEL = "MODEL"
+    SYNTHESIZER = "SYNTH"
+    TRAINER = "TRAINER"
 
 
 # Huggingface model documentation can be found by appending the model name to https://huggingface.co/
