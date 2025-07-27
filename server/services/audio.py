@@ -7,7 +7,7 @@ from utils.enums import LogLevel
 from utils.logger import Logger
 
 
-class Audio:
+class AudioService:
     @staticmethod
     def load_audio(data, debug=False):
         Logger.log(LogLevel.INFO, "Loading audio data from request...")

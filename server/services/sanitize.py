@@ -1,4 +1,4 @@
-class Sanitize:
+class SanitizeService:
     @staticmethod
     def decode_headers(data):
         headers = {}

@@ -3,8 +3,8 @@ import time
 
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, pipeline, set_seed
 
-from services.audio import Audio
-from services.sanitize import Sanitize
+from services.audio import AudioService
+from services.sanitize import SanitizeService
 
 from utils.enums import (
     AudioRequestMode,
@@ -85,7 +85,7 @@ class Model:
         return output
 
     def handle_audio_prompt(self, request):
-        headers = Sanitize.decode_headers(request.query_string)
+        headers = SanitizeService.decode_headers(request.query_string)
         Logger.log(
             LogLevel.INFO,
             f"Handling audio prompt of type '{headers.get("mode")}'",
@@ -105,7 +105,7 @@ class Model:
 
         # Load the raw audio data from the request and transcribe it
         # TODO: Do I need to transcribe audio to text first in order to provide a prompt to call self.generate_reply?
-        audio_data = Audio.load_audio(request.data)
+        audio_data = AudioService.load_audio(request.data)
         request_transcription = Synthesizer.stt_pipeline(audio_data)
 
         # If the request is a question, generate a reply from the model using the input transcription as a prompt
@@ -124,7 +124,7 @@ class Model:
     def handle_text_prompt(self, request):
         Logger.log(LogLevel.INFO, "Handling text prompt")
 
-        headers = Sanitize.decode_headers(request.query_string)
+        headers = SanitizeService.decode_headers(request.query_string)
         assert (
             request.form.get("userMessage") is not None
         ), "User message must be provided."
