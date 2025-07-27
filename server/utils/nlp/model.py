@@ -1,47 +1,49 @@
-import io
-import scipy
+import os
 import time
 
-from pydub import AudioSegment
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, pipeline, set_seed
 
+from services.audio import Audio
 from services.sanitize import Sanitize
 
 from utils.enums import (
     AudioRequestMode,
     LogLevel,
     Models,
-    Tasks,
     PipelineFrameworks,
+    Tasks,
 )
 from utils.logger import Logger
 from utils.nlp.synthesizer import Synthesizer
 
-
 model: GPT2LMHeadModel
 tokenizer: GPT2Tokenizer
 
-log_level: LogLevel = LogLevel.CHATBOT
-conversation_history: list
+# TODO: Read in the conversation history from a JSON file
+conversation_history: list = []
 DEBUG: bool
+log_level: LogLevel = LogLevel.MODEL
 
 
-class Chatbot:
+class Model:
     def __init__(self, debug: bool = False):
         Logger.log(log_level, "Initializing Chatbot...")
         self.DEBUG = debug
-
-        self.tokenizer = GPT2Tokenizer.from_pretrained(Models.GPT2.value)
-        self.model = GPT2LMHeadModel.from_pretrained(Models.GPT2.value)
-
-        # TODO: Read in the conversation history from a JSON file
         self.conversation_history = []
 
-        generator = pipeline(
-            Tasks.TEXT_GENERATION.value, model=Models.GPT2.value
-        )
+        self.tokenizer = GPT2Tokenizer.from_pretrained(Models.GPT2.value)
+        self.tokenizer.pad_token = self.tokenizer.eos_token
+
+        model_path = "./../../training_data/gpt2-finetuned"
+        if os.path.exists(model_path):
+            self.model = GPT2LMHeadModel.from_pretrained(model_path)
+        else:
+            self.model = GPT2LMHeadModel.from_pretrained("gpt2")
+        self.model.config.pad_token_id = self.model.config.eos_token_id
+
+        generator = pipeline(Tasks.TEXT_GENERATION.value, model=self.model, tokenizer=self.tokenizer)
         set_seed(67)
-        generator("Hello!", truncation=False, num_return_sequences=10)
+        generator("Hello!", padding=False, truncation=True, max_length=512)
 
         Logger.log(log_level, "Chatbot initialized successfully.")
 
@@ -52,7 +54,7 @@ class Chatbot:
     def generate_reply(self, user_input: str):
         # Encode the input and add conversation history for context
         conversation_context = " ".join(
-            [entry["user_input"] for entry in self.conversation_history]
+            [entry.get("user_input") for entry in self.conversation_history]
         )
         input_text = f"{conversation_context} {user_input}"
         encoded_input = self.tokenizer(
@@ -103,7 +105,7 @@ class Chatbot:
 
         # Load the raw audio data from the request and transcribe it
         # TODO: Do I need to transcribe audio to text first in order to provide a prompt to call self.generate_reply?
-        audio_data = self.load_request_audio(request.data)
+        audio_data = Audio.load_audio(request.data)
         request_transcription = Synthesizer.stt_pipeline(audio_data)
 
         # If the request is a question, generate a reply from the model using the input transcription as a prompt
@@ -116,7 +118,7 @@ class Chatbot:
         return {
             "reply": reply,
             "audio": audio,
-            "transcription": request_transcription.get("text", "")
+            "transcription": request_transcription.get("text", ""),
         }
 
     def handle_text_prompt(self, request):
@@ -146,24 +148,3 @@ class Chatbot:
             audio_base64 = Synthesizer.generate_audio(reply)
 
         return {"reply": reply, "audio": audio_base64}
-
-    def load_request_audio(self, data):
-        Logger.log(LogLevel.INFO, "Loading audio data from request...")
-        audio_buffer = io.BytesIO(data)
-        wav_buffer = io.BytesIO()
-
-        audio = AudioSegment.from_file(audio_buffer)
-        audio.export(wav_buffer, format="wav")
-        wav_buffer.seek(0)
-
-        if self.DEBUG:
-            Logger.log(LogLevel.DEBUG, "Saving audio data to debug.raw")
-            with open("debug.raw", "wb") as f:
-                f.write(audio_buffer.read())
-
-        # Read the audio data from the wav_buffer
-        sampling_rate, audio_data = scipy.io.wavfile.read(wav_buffer)
-        Logger.log(LogLevel.INFO, "Audio data loaded successfully.")
-
-        wav_buffer.close()
-        return audio_data
