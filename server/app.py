@@ -1,19 +1,19 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from services.env import EnvService
+from services.env import EnvService, EnvVars
 
 from utils.enums import LogLevel
 from utils.logger import Logger
 from utils.nlp.model import Model
 from utils.nlp.trainer import Trainer
 
-DEBUG = EnvService.get_debug()
-ROUTE_ASR = EnvService.get_route_asr()
-ROUTE_TTS = EnvService.get_route_tts()
-ROUTE_TRAINING = EnvService.get_route_training()
-SERVER_PORT = EnvService.get_server_port()
-SERVER_HOST = EnvService.get_server_host()
+DEBUG = EnvService.is_debug()
+ROUTE_ASR = EnvService.get(EnvVars.ROUTE_ASR.value)
+ROUTE_TRAINING = EnvService.get(EnvVars.ROUTE_TRAINING.value)
+ROUTE_TTS = EnvService.get(EnvVars.ROUTE_TTS.value)
+SERVER_HOST = EnvService.get(EnvVars.SERVER_HOST.value)
+SERVER_PORT = EnvService.get(EnvVars.SERVER_PORT.value)
 
 # Initialize the LLM instance and trainer
 model = Model(DEBUG)
