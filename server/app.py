@@ -1,23 +1,19 @@
-import os
-
-from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+
+from services.env import EnvService
 
 from utils.enums import LogLevel
 from utils.logger import Logger
 from utils.nlp.model import Model
 from utils.nlp.trainer import Trainer
 
-# Load and configure environment variables
-load_dotenv()
-_DEBUG = os.getenv("DEBUG")
-DEBUG = _DEBUG.lower() == "true" if _DEBUG else False
-ROUTE_ASR = os.getenv("ROUTE_ASR", "/api/v1/asr")
-ROUTE_TTS = os.getenv("ROUTE_TTS", "/api/v1/tts")
-ROUTE_TRAINING = os.getenv("ROUTE_TRAINING", "/api/v1/training")
-SERVER_PORT = os.getenv("SERVER_PORT", 5000)
-SERVER_HOST = os.getenv("SERVER_HOST", "0.0.0.0")
+DEBUG = EnvService.get_debug()
+ROUTE_ASR = EnvService.get_route_asr()
+ROUTE_TTS = EnvService.get_route_tts()
+ROUTE_TRAINING = EnvService.get_route_training()
+SERVER_PORT = EnvService.get_server_port()
+SERVER_HOST = EnvService.get_server_host()
 
 # Initialize the LLM instance and trainer
 model = Model(DEBUG)
