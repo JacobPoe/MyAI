@@ -12,6 +12,9 @@ DEBUG = _DEBUG.lower() == "true" if _DEBUG else False
 class EnvService:
     @staticmethod
     def get(key: str) -> str:
+        assert key is not None, "Environment variable key must be specified."
+        assert EnvVars(key) is not None, f"Invalid environment variable key: {key}"
+
         return os.getenv(key)
 
     @staticmethod
