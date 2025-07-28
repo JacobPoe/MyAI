@@ -4,6 +4,7 @@ import time
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, pipeline, set_seed
 
 from services.audio import AudioService
+from services.env import EnvService, EnvVars
 from services.sanitize import SanitizeService
 
 from utils.enums import (
@@ -43,7 +44,7 @@ class Model:
 
         generator = pipeline(Tasks.TEXT_GENERATION.value, model=self.model, tokenizer=self.tokenizer)
         set_seed(67)
-        generator("Hello!", padding=False, truncation=True, max_length=512)
+        generator("Hello!", padding=False, truncation=True, max_new_tokens=10)
 
         Logger.log(log_level, "Chatbot initialized successfully.")
 

@@ -37,4 +37,26 @@ With this in mind I built on my original app.py and implemented the following:
 | STT_COMPUTATION_DEVICE | cpu                                                   | Device index for stt computation (e.g., GPU)    |
 | STT_SAMPLE_RATE        | 16000                                                 | Sample rate for speech-to-text processing       |
 
+# Datasets.json
+`datasets.json` is a configuration file designed to streamline the importation of multiple datasets at run time. At a high level, each entry takes the following structure:
+```
+{
+	name: string, // Human-readable name of the dataset.
+	hf_id: string, // The ID of the dataset in Hugging Face's datasets repo.
+	pattern: string, // The pattern to be used to format the dataset prior to tokenization.
+	columns: string[], // The dataset's column keys, used to build the prompt input along with pattern.
+	config_type: "main" | "socratic", // Required second param when calling load_dataset() for GSM8K
+	reference: obj // An object containing citation data for the dataset. Provided for credit and reference.
+	split: "train" | "test" // Which portion of the dataset to use for building the model
+}
+```
+This project uses [openai/gsm8k](https://huggingface.co/datasets/openai/gsm8k/) as its baseline training data. Its import configuration can be referenced in the file `server/datasets.json`.
+
+# References
+## Projects
+* [Hugging Face Kernel Hub](https://huggingface.co/kernels-community)
+  * [Intro wiki](https://huggingface.co/blog/hello-hf-kernels)
+
+* [Flash](https://github.com/Dao-AILab/flash-attention)	-	Performance optimization
+
 Have fun!
