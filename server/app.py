@@ -37,6 +37,7 @@ def route_training():
         Logger.log(LogLevel.ERROR, f"Error processing training request, {e}")
         return jsonify({"error": str(e)}), 500
 
+
 ### POSTs
 ####################################################################################################
 @app.route(ROUTE_ASR, methods=["POST"])

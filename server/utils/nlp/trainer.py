@@ -43,7 +43,6 @@ class Trainer:
         )
         Logger.log(LogLevel.INFO, "Trainer initialized successfully.")
 
-
     def __del__(self):
         Logger.log(LogLevel.INFO, "Destroying Trainer instance...")
         if self.trainer is not None:
@@ -76,7 +75,11 @@ class Trainer:
     def combine_datasets(configs):
         all_datasets = []
         for config in configs:
-            dataset = load_dataset(config.get("hf_id"), config.get("config_type"), split=config.get("split", "train"))
+            dataset = load_dataset(
+                config.get("hf_id"),
+                config.get("config_type"),
+                split=config.get("split", "train"),
+            )
 
             # Format the text for each example into a new 'text' column
             def format_batch(batch):
@@ -88,9 +91,13 @@ class Trainer:
                     values = []
                     for col in columns:
                         val = batch[col][i]
-                        if isinstance(val, dict) and 'text' in val:
+                        if isinstance(val, dict) and "text" in val:
                             # Take the first answer if it's a list
-                            values.append(val['text'][0] if isinstance(val['text'], list) and val['text'] else "")
+                            values.append(
+                                val["text"][0]
+                                if isinstance(val["text"], list) and val["text"]
+                                else ""
+                            )
                         else:
                             values.append(str(val))
                     formatted_texts.append(pattern.format(*values))
@@ -105,10 +112,8 @@ class Trainer:
     @staticmethod
     def load_dataset_configs():
         datasets_path = os.path.join(
-            os.path.abspath(os.path.join(__file__, "../../..")),
-            "datasets.json"
+            os.path.abspath(os.path.join(__file__, "../../..")), "datasets.json"
         )
         with open(datasets_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         return data
-

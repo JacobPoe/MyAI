@@ -4,7 +4,6 @@ import time
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, pipeline, set_seed
 
 from services.audio import AudioService
-from services.env import EnvService, EnvVars
 from services.sanitize import SanitizeService
 
 from utils.enums import (
@@ -42,7 +41,11 @@ class Model:
             self.model = GPT2LMHeadModel.from_pretrained("gpt2")
         self.model.config.pad_token_id = self.model.config.eos_token_id
 
-        generator = pipeline(Tasks.TEXT_GENERATION.value, model=self.model, tokenizer=self.tokenizer)
+        generator = pipeline(
+            Tasks.TEXT_GENERATION.value,
+            model=self.model,
+            tokenizer=self.tokenizer,
+        )
         set_seed(67)
         generator("Hello!", padding=False, truncation=True, max_new_tokens=10)
 
