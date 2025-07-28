@@ -11,11 +11,16 @@ DEBUG = _DEBUG.lower() == "true" if _DEBUG else False
 
 class EnvService:
     @staticmethod
-    def get(key: str) -> str:
-        assert key is not None, "Environment variable key must be specified."
+    def get(key: str) -> str | None:
         assert EnvVars(key) is not None, f"Invalid environment variable key: {key}"
 
         return os.getenv(key)
+
+    @staticmethod
+    def get_int(key: str) -> int | None:
+        assert EnvVars(key) is not None, f"Invalid environment variable key: {key}"
+
+        return int(os.getenv(key))
 
     @staticmethod
     def is_debug() -> bool:
@@ -23,6 +28,7 @@ class EnvService:
 
 class EnvVars(Enum):
     DEBUG = "DEBUG"
+    MAX_LENGTH = "MAX_LENGTH"
     ROUTE_ASR = "ROUTE_ASR"
     ROUTE_TTS = "ROUTE_TTS"
     ROUTE_TRAINING = "ROUTE_TRAINING"
