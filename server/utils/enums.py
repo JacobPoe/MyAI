@@ -9,7 +9,7 @@ class AudioRequestMode(Enum):
 # Huggingface datasets can be found at https://huggingface.co/datasets
 # Ex. https://huggingface.co/datasets/MegaScience/MegaScience
 class Dataset(Enum):
-    MEGASCIENCE = "MegaScience/MegaScience"
+    GSM8K = "openai/gsm8k"
 
 
 class LogLevel(Enum):

@@ -1,26 +1,28 @@
 # Python 3.10.15
 
 # Project dependencies
+accelerate>=0.26.0
+datasets
 Flask~=3.0.3
 Flask-Cors~=5.0.0
+kernels
 numpy~=1.26.4
 pillow~=10.4.0
 pydub~=0.25.1
 python-dotenv~=1.0.1
 scipy~=1.14.1
 setuptools~=78.1.1
+torch~=2.7.1
 transformers~=4.52.1
 
-# Model dependencies
-torch~=2.7.1
+# Linting tools
+black
+pylint
 
 # Project Modules
 -e utils
 -e services
 
-# Linting tools
-black
-pylint
 
 services
 utils
