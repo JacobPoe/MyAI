@@ -5,7 +5,7 @@
     "hf_id": "openai/gsm8k",
     "pattern": "<Question>{}</Question><Answer>{}</Answer>",
     "columns": ["question", "answer"],
-    "config_type": "socratic",
+    "config_type": "default",
     "reference": {
       "title": "Training Verifiers to Solve Math Word Problems",
       "authors": ["Cobbe, Karl", "Kosaraju, Vineet", "Bavarian, Mohammad", "Chen, Mark", "Jun, Heewoo", "Kaiser, Lukasz", "Plappert, Matthias", "Tworek, Jerry", "Hilton, Jacob", "Nakano, Reiichiro", "Hesse, Christopher", "Schulman, John"],
@@ -56,7 +56,7 @@
   },
   {
     "name": "Doc Formats CSV 1",
-    "active": true,
+    "active": false,
     "hf_id": "datasets-examples/doc-formats-csv-1",
     "pattern": "<Question>What sound does a {} make?</Question><Answer>{}</Answer>",
     "columns": ["kind", "sound"],
