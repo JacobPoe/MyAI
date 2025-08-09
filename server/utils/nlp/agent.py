@@ -17,7 +17,7 @@ from utils.enums import (
 from utils.logger import Logger
 from utils.nlp.synthesizer import Synthesizer
 
-log_level: LogLevel = LogLevel.MODEL
+log_level: LogLevel = LogLevel.AGENT
 
 PRETRAINED_MODEL_DIR = EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value)
 PRETRAINED_MODEL_DEFAULT = EnvService.get(

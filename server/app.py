@@ -5,7 +5,7 @@ from services.env import EnvService, EnvVars
 
 from utils.enums import LogLevel
 from utils.logger import Logger
-from utils.nlp.model import Model
+from utils.nlp.agent import Agent
 from utils.nlp.trainer import Trainer
 
 DEBUG = EnvService.is_debug()
@@ -16,8 +16,8 @@ SERVER_HOST = EnvService.get(EnvVars.SERVER_HOST.value)
 SERVER_PORT = EnvService.get(EnvVars.SERVER_PORT.value)
 
 # Initialize the LLM instance
-model = Model(DEBUG)
-trainer: Trainer or None = None
+agent = Agent(DEBUG)
+trainer = Trainer(model=agent.model, tokenizer=agent.tokenizer)
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -28,11 +28,15 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 @app.route(ROUTE_TRAINING_INIT, methods=["GET"])
 def route_training_init():
     try:
-        global trainer
-        if trainer is None:
-            trainer = Trainer(model=model.model, tokenizer=model.tokenizer)
-        trainer.init_training(request)
-        return jsonify({"message": "Training sequence completed. Please validate your results."}), 200
+        trainer.handle_training_start(request)
+        return (
+            jsonify(
+                {
+                    "message": "Training sequence completed. Please validate your results."
+                }
+            ),
+            200,
+        )
     except Exception as e:
         Logger.log(LogLevel.ERROR, f"Error running training sequence, {e}")
         return jsonify({"error": "Error running training sequence."}), 500
@@ -43,7 +47,7 @@ def route_training_init():
 @app.route(ROUTE_ASR, methods=["POST"])
 def route_audio_prompt():
     try:
-        response = model.handle_audio_prompt(request)
+        response = agent.handle_audio_prompt(request)
         return jsonify(response), 200
     except Exception as e:
         Logger.log(LogLevel.ERROR, f"Error processing audio prompt, {e}")
@@ -53,7 +57,7 @@ def route_audio_prompt():
 @app.route(ROUTE_TTS, methods=["POST"])
 def route_text_prompt():
     try:
-        response = model.handle_text_prompt(request)
+        response = agent.handle_text_prompt(request)
         return jsonify(response), 200
     except Exception as e:
         Logger.log(LogLevel.ERROR, f"Error processing text prompt, {e}")
