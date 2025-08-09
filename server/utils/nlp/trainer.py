@@ -39,7 +39,7 @@ class Trainer:
 
     def init_trainer(self):
         training_args.output_dir = (
-            PRETRAINED_MODEL_DIR + PRETRAINED_MODEL_DEFAULT + "__" + str(time.time())
+            PRETRAINED_MODEL_DIR + "/results/" + PRETRAINED_MODEL_DEFAULT + "__" + str(time.time())
         )
         training_args.logging_dir = PRETRAINED_MODEL_DIR + "/logs"
 
@@ -164,6 +164,7 @@ class Trainer:
     def check_and_build_training_dirs():
         os.makedirs(PRETRAINED_MODEL_DIR, exist_ok=True)
         os.makedirs(PRETRAINED_MODEL_DIR + "/logs", exist_ok=True)
+        os.makedirs(PRETRAINED_MODEL_DIR + "/results", exist_ok=True)
 
     @staticmethod
     def parse_request_options(request):
