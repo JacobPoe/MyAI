@@ -2,6 +2,7 @@ import json
 import os
 
 from services.env import EnvService, EnvVars
+from utils.enums import TrainingRequestOpts
 from utils.logger import Logger, LogLevel
 
 from datasets import load_dataset, concatenate_datasets
@@ -14,7 +15,7 @@ from transformers import (
 
 PRETRAINED_MODEL_DIR = EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value)
 PRETRAINED_MODEL_DEFAULT = EnvService.get(
-    EnvVars.PRETRAINED_MODEL_DEFAULT.value
+    EnvVars.SELECTED_PRETRAINED_MODEL.value
 )
 
 training_args = TrainingArguments(
@@ -25,38 +26,29 @@ training_args = TrainingArguments(
     save_strategy="epoch",
     save_total_limit=2,
     prediction_loss_only=True,
+    push_to_hub=False,
 )
-
-trainer: T | None = None
 
 
 class Trainer:
     def __init__(self, model: GPT2LMHeadModel, tokenizer: GPT2Tokenizer):
-        Logger.log(LogLevel.INFO, "Initializing Trainer...")
+        self.model = model
+        self.tokenizer = tokenizer
+        self.trainer = None
 
-        if not os.path.exists(PRETRAINED_MODEL_DIR + PRETRAINED_MODEL_DEFAULT):
-            os.makedirs(PRETRAINED_MODEL_DIR + PRETRAINED_MODEL_DEFAULT)
+    def init_trainer(self):
         training_args.output_dir = (
             PRETRAINED_MODEL_DIR + PRETRAINED_MODEL_DEFAULT
         )
-
-        if not os.path.exists(
-            PRETRAINED_MODEL_DIR + PRETRAINED_MODEL_DEFAULT + "/logs"
-        ):
-            os.makedirs(
-                PRETRAINED_MODEL_DIR + PRETRAINED_MODEL_DEFAULT + "/logs"
-            )
-        training_args.logging_dir = (
-            PRETRAINED_MODEL_DIR + PRETRAINED_MODEL_DEFAULT + "/logs"
-        )
+        training_args.logging_dir = PRETRAINED_MODEL_DIR + "/logs"
 
         dataset_configs = Trainer.load_dataset_configs()
         dataset = Trainer.combine_datasets(dataset_configs)
-        tokenized_dataset = Trainer.tokenize_dataset(dataset, tokenizer)
+        tokenized_dataset = Trainer.tokenize_dataset(dataset, self.tokenizer)
 
         try:
             self.trainer = T(
-                model=model,
+                model=self.model,
                 args=training_args,
                 train_dataset=tokenized_dataset["train"],
                 eval_dataset=tokenized_dataset["test"],
@@ -67,31 +59,38 @@ class Trainer:
                 LogLevel.ERROR,
                 f"Failed to initialize Trainer: {e}",
             )
-            raise e
 
-    def save(self):
-        if self.trainer is not None:
-            try:
-                Logger.log(LogLevel.INFO, "Saving model...")
-                self.trainer.save_model()
-                Logger.log(LogLevel.INFO, "Model saved successfully.")
-            except Exception as e:
-                Logger.log(LogLevel.ERROR, f"Error saving model: {e}")
-        else:
-            err_msg = "Trainer is not initialized, cannot save model."
-            Logger.log(LogLevel.ERROR, err_msg)
-            raise Exception(err_msg)
-
-    def init_training(self):
+    def handle_training_start(self, request):
+        Trainer.check_and_build_training_dirs()
+        opts = Trainer.parse_request_options(request)
         try:
-            self.trainer.train()
-            self.save()
+            self.init_trainer()
+            self.trainer.train(
+                resume_from_checkpoint=opts.get(
+                    TrainingRequestOpts.RESUME_FROM_CHECKPOINT.value
+                )
+            )
+            self.handle_training_end()
         except Exception as e:
             Logger.log(
                 LogLevel.ERROR,
                 f"Error during training: {e}",
             )
-            raise e
+
+    def handle_training_end(self):
+        if self.trainer is not None:
+            try:
+                Logger.log(LogLevel.INFO, "Saving model...")
+                self.trainer.save_model()
+                Logger.log(LogLevel.INFO, "Model saved successfully.")
+
+                del self.trainer
+            except Exception as e:
+                Logger.log(LogLevel.ERROR, f"Error saving model: {e}")
+
+        else:
+            err_msg = "Trainer is not initialized, cannot save model."
+            Logger.log(LogLevel.ERROR, err_msg)
 
     @staticmethod
     def tokenize_dataset(dataset, t: GPT2Tokenizer):
@@ -159,3 +158,21 @@ class Trainer:
         with open(datasets_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         return data
+
+    @staticmethod
+    def check_and_build_training_dirs():
+        os.makedirs(PRETRAINED_MODEL_DIR, exist_ok=True)
+        os.makedirs(PRETRAINED_MODEL_DIR + "/logs", exist_ok=True)
+
+    @staticmethod
+    def parse_request_options(request):
+        resume_from_checkpoint = (
+            request.args.get(
+                TrainingRequestOpts.RESUME_FROM_CHECKPOINT.value, "false"
+            ).lower()
+            == "true"
+        )
+
+        return {
+            TrainingRequestOpts.RESUME_FROM_CHECKPOINT: resume_from_checkpoint,
+        }
