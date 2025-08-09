@@ -17,9 +17,6 @@ from utils.enums import (
 from utils.logger import Logger
 from utils.nlp.synthesizer import Synthesizer
 
-model: GPT2LMHeadModel | None
-tokenizer: GPT2Tokenizer
-
 # TODO: Read in the conversation history from a JSON file
 conversation_history: list = []
 DEBUG: bool
@@ -31,7 +28,7 @@ PRETRAINED_MODEL_DEFAULT = EnvService.get(
 )
 
 
-class Model:
+class Agent:
     def __init__(self, debug: bool = False):
         Logger.log(log_level, "Initializing Chatbot...")
         self.DEBUG = debug
