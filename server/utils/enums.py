@@ -13,12 +13,12 @@ class Dataset(Enum):
 
 
 class LogLevel(Enum):
+    AGENT = "AGENT"
     CAPTION = "CAPTION"
     DATA = "DATA"
     DEBUG = "DEBUG"
     ERROR = "ERROR"
     INFO = "INFO"
-    MODEL = "MODEL"
     SYNTHESIZER = "SYNTH"
     TRAINER = "TRAINER"
 
@@ -39,3 +39,7 @@ class Tasks(Enum):
     ASR = "automatic-speech-recognition"
     TEXT_GENERATION = "text-generation"
     TTS = "text-to-speech"
+
+
+class TrainingRequestOpts(Enum):
+    RESUME_FROM_CHECKPOINT = "resume_from_checkpoint"

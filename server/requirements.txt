@@ -8,6 +8,7 @@ Flask-Cors~=5.0.0
 kernels
 numpy~=1.26.4
 pillow~=10.4.0
+protobuf
 pydub~=0.25.1
 python-dotenv~=1.0.1
 scipy~=1.14.1

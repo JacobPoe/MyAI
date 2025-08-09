@@ -4,6 +4,7 @@ import time
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, pipeline, set_seed
 
 from services.audio import AudioService
+from services.env import EnvService, EnvVars
 from services.sanitize import SanitizeService
 
 from utils.enums import (
@@ -16,44 +17,57 @@ from utils.enums import (
 from utils.logger import Logger
 from utils.nlp.synthesizer import Synthesizer
 
-model: GPT2LMHeadModel
-tokenizer: GPT2Tokenizer
+log_level: LogLevel = LogLevel.AGENT
+default_model = Models.GPT2.value
 
-# TODO: Read in the conversation history from a JSON file
-conversation_history: list = []
-DEBUG: bool
-log_level: LogLevel = LogLevel.MODEL
+PRETRAINED_MODEL_DIR = EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value)
+SELECTED_PRETRAINED_MODEL = EnvService.get(
+    EnvVars.SELECTED_PRETRAINED_MODEL.value
+)
 
 
-class Model:
+class Agent:
     def __init__(self, debug: bool = False):
-        Logger.log(log_level, "Initializing Chatbot...")
-        self.DEBUG = debug
+        Logger.log(log_level, "Initializing Agent...")
         self.conversation_history = []
+        self.DEBUG = debug
+        self.model = None
+        self.tokenizer = None
 
-        self.tokenizer = GPT2Tokenizer.from_pretrained(Models.GPT2.value)
-        self.tokenizer.pad_token = self.tokenizer.eos_token
-
-        model_path = "./../../training_data/gpt2-finetuned"
-        if os.path.exists(model_path):
-            self.model = GPT2LMHeadModel.from_pretrained(model_path)
-        else:
-            self.model = GPT2LMHeadModel.from_pretrained("gpt2")
-        self.model.config.pad_token_id = self.model.config.eos_token_id
-
-        generator = pipeline(
-            Tasks.TEXT_GENERATION.value,
-            model=self.model,
-            tokenizer=self.tokenizer,
+        pretrained_model_dir = (
+            EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value) + "/results/"
         )
-        set_seed(67)
-        generator("Hello!", padding=False, truncation=True, max_new_tokens=10)
 
-        Logger.log(log_level, "Chatbot initialized successfully.")
+        try:
+            path = Agent.get_most_recent_training_results(pretrained_model_dir)
+            self.model = GPT2LMHeadModel.from_pretrained(
+                path, use_safetensors=True
+            )
+            self.tokenizer = GPT2Tokenizer.from_pretrained(default_model)
+            self.set_token_padding()
+            Logger.log(log_level, "Agent initialized successfully.")
+        except Exception as e:
+            Logger.log(
+                LogLevel.ERROR,
+                "Failed to load agent providers from path: {}. Providers will be loaded using default pretrained model. Error: {}".format(
+                    pretrained_model_dir, e
+                ),
+            )
+            self.init_default_providers()
 
     def __del__(self):
         Logger.save_log(log_level, self.conversation_history)
-        Logger.log(log_level, "Chatbot instance destroyed.")
+        Logger.log(log_level, "Agent instance destroyed.")
+
+    def init_default_providers(self):
+        if self.model is None:
+            self.model = GPT2LMHeadModel.from_pretrained(default_model)
+
+        if self.tokenizer is None:
+            self.tokenizer = GPT2Tokenizer.from_pretrained(default_model)
+
+        self.set_token_padding()
+        Logger.log(log_level, "Agent initialized using default providers.")
 
     def generate_reply(self, user_input: str):
         # Encode the input and add conversation history for context
@@ -152,3 +166,42 @@ class Model:
             audio_base64 = Synthesizer.generate_audio(reply)
 
         return {"reply": reply, "audio": audio_base64}
+
+    def set_token_padding(self):
+        self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.model.config.pad_token_id = self.model.config.eos_token_id
+
+    def warm_up_generator(self):
+        try:
+            generator = pipeline(
+                Tasks.TEXT_GENERATION.value,
+                model=self.model,
+                tokenizer=self.tokenizer,
+            )
+            set_seed(67)
+            generator(
+                "Hello!", padding=False, truncation=True, max_new_tokens=10
+            )
+            Logger.log(log_level, "Generator warmed up successfully.")
+        except Exception as e:
+            Logger.log(
+                LogLevel.ERROR,
+                f"Failed to warm up generator. Initial prompts may take longer than expected. Error: {e}",
+            )
+
+
+    @staticmethod
+    def get_most_recent_training_results(directory):
+        """
+        Loads the most recent model from the specified directory.
+        Assumes that the models are saved to folders which follow a regular naming convention
+        which ends in a timestamp.
+        """
+
+        folders = [
+            f
+            for f in os.listdir(directory)
+            if os.path.isdir(os.path.join(directory, f))
+        ]
+        # Return the alphabetically last folder name
+        return directory + max(folders) if folders else None
