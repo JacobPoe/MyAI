@@ -32,7 +32,7 @@ def route_training():
         if trainer is None:
             trainer = Trainer(model=model.model, tokenizer=model.tokenizer)
         trainer.init_training()
-        return jsonify({"message": "Training initiated."}), 200
+        return jsonify({"message": "Training completed."}), 200
     except Exception as e:
         Logger.log(LogLevel.ERROR, f"Error processing training request, {e}")
         return jsonify({"error": str(e)}), 500
