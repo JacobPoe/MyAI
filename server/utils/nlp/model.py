@@ -4,6 +4,7 @@ import time
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, pipeline, set_seed
 
 from services.audio import AudioService
+from services.env import EnvService, EnvVars
 from services.sanitize import SanitizeService
 
 from utils.enums import (
@@ -16,13 +17,18 @@ from utils.enums import (
 from utils.logger import Logger
 from utils.nlp.synthesizer import Synthesizer
 
-model: GPT2LMHeadModel
+model: GPT2LMHeadModel | None
 tokenizer: GPT2Tokenizer
 
 # TODO: Read in the conversation history from a JSON file
 conversation_history: list = []
 DEBUG: bool
 log_level: LogLevel = LogLevel.MODEL
+
+PRETRAINED_MODEL_DIR = EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value)
+PRETRAINED_MODEL_DEFAULT = EnvService.get(
+    EnvVars.PRETRAINED_MODEL_DEFAULT.value
+)
 
 
 class Model:
@@ -34,13 +40,33 @@ class Model:
         self.tokenizer = GPT2Tokenizer.from_pretrained(Models.GPT2.value)
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
-        model_path = "./../../training_data/gpt2-finetuned"
-        if os.path.exists(model_path):
-            self.model = GPT2LMHeadModel.from_pretrained(model_path)
+        pretrained_model_dir = EnvService.get(
+            EnvVars.PRETRAINED_MODEL_DIR.value
+        )
+        pretrained_model_default = EnvService.get(
+            EnvVars.PRETRAINED_MODEL_DEFAULT.value
+        )
+        if os.path.exists(pretrained_model_dir + pretrained_model_default):
+            try:
+                self.model = GPT2LMHeadModel.from_pretrained(
+                    pretrained_model_dir + pretrained_model_default
+                )
+            except Exception as e:
+                Logger.log(
+                    LogLevel.ERROR,
+                    "Failed to load model from path: {}{}. Default model will be loaded. Error: {}".format(
+                        pretrained_model_dir, pretrained_model_default, e
+                    ),
+                )
+                self.model = None
         else:
-            self.model = GPT2LMHeadModel.from_pretrained("gpt2")
-        self.model.config.pad_token_id = self.model.config.eos_token_id
+            Logger.log(log_level, "Loading default model 'gpt2'.")
+            self.model = None
 
+        if self.model is None:
+            self.model = GPT2LMHeadModel.from_pretrained("gpt2")
+
+        self.model.config.pad_token_id = self.model.config.eos_token_id
         generator = pipeline(
             Tasks.TEXT_GENERATION.value,
             model=self.model,
