@@ -1,5 +1,6 @@
 import json
 import os
+import time
 
 from services.env import EnvService, EnvVars
 from utils.enums import TrainingRequestOpts
@@ -38,7 +39,7 @@ class Trainer:
 
     def init_trainer(self):
         training_args.output_dir = (
-            PRETRAINED_MODEL_DIR + PRETRAINED_MODEL_DEFAULT
+            PRETRAINED_MODEL_DIR + PRETRAINED_MODEL_DEFAULT + "__" + str(time.time())
         )
         training_args.logging_dir = PRETRAINED_MODEL_DIR + "/logs"
 
