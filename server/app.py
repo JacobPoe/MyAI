@@ -10,7 +10,7 @@ from utils.nlp.trainer import Trainer
 
 DEBUG = EnvService.is_debug()
 ROUTE_ASR = EnvService.get(EnvVars.ROUTE_ASR.value)
-ROUTE_TRAINING = EnvService.get(EnvVars.ROUTE_TRAINING.value)
+ROUTE_TRAINING_INIT = EnvService.get(EnvVars.ROUTE_TRAINING_INIT.value)
 ROUTE_TTS = EnvService.get(EnvVars.ROUTE_TTS.value)
 SERVER_HOST = EnvService.get(EnvVars.SERVER_HOST.value)
 SERVER_PORT = EnvService.get(EnvVars.SERVER_PORT.value)
@@ -25,17 +25,17 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 ### GETs
 ####################################################################################################
-@app.route(ROUTE_TRAINING, methods=["GET"])
-def route_training():
+@app.route(ROUTE_TRAINING_INIT, methods=["GET"])
+def route_training_init():
     try:
         global trainer
         if trainer is None:
             trainer = Trainer(model=model.model, tokenizer=model.tokenizer)
-        trainer.init_training()
-        return jsonify({"message": "Training completed."}), 200
+        trainer.init_training(request)
+        return jsonify({"message": "Training sequence completed. Please validate your results."}), 200
     except Exception as e:
-        Logger.log(LogLevel.ERROR, f"Error processing training request, {e}")
-        return jsonify({"error": str(e)}), 500
+        Logger.log(LogLevel.ERROR, f"Error running training sequence, {e}")
+        return jsonify({"error": "Error running training sequence."}), 500
 
 
 ### POSTs
@@ -47,7 +47,7 @@ def route_audio_prompt():
         return jsonify(response), 200
     except Exception as e:
         Logger.log(LogLevel.ERROR, f"Error processing audio prompt, {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Error processing audio prompt."}), 500
 
 
 @app.route(ROUTE_TTS, methods=["POST"])
@@ -57,7 +57,7 @@ def route_text_prompt():
         return jsonify(response), 200
     except Exception as e:
         Logger.log(LogLevel.ERROR, f"Error processing text prompt, {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Error processing text prompt."}), 500
 
 
 ### Main
