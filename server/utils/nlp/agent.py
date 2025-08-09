@@ -34,31 +34,25 @@ class Agent:
         self.model = None
         self.tokenizer = None
 
-        pretrained_model_dir = EnvService.get(
-            EnvVars.PRETRAINED_MODEL_DIR.value
+        pretrained_model_dir = (
+            EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value) + "/results/"
         )
-        selected_pretrained_model = EnvService.get(
-            EnvVars.SELECTED_PRETRAINED_MODEL.value
-        )
-        if os.path.exists(pretrained_model_dir + selected_pretrained_model):
-            try:
-                self.model = GPT2LMHeadModel.from_pretrained(
-                    pretrained_model_dir + selected_pretrained_model
-                )
-                self.tokenizer = GPT2Tokenizer.from_pretrained(
-                    pretrained_model_dir + selected_pretrained_model
-                )
-                self.set_token_padding()
-                Logger.log(log_level, "Agent initialized successfully.")
-            except Exception as e:
-                Logger.log(
-                    LogLevel.ERROR,
-                    "Failed to load agent providers from path: {}{}. Providers will be loaded using default pretrained model. Error: {}".format(
-                        pretrained_model_dir, selected_pretrained_model, e
-                    ),
-                )
-                self.init_default_providers()
-        else:
+
+        try:
+            path = Agent.get_most_recent_training_results(pretrained_model_dir)
+            self.model = GPT2LMHeadModel.from_pretrained(
+                path, use_safetensors=True
+            )
+            self.tokenizer = GPT2Tokenizer.from_pretrained(default_model)
+            self.set_token_padding()
+            Logger.log(log_level, "Agent initialized successfully.")
+        except Exception as e:
+            Logger.log(
+                LogLevel.ERROR,
+                "Failed to load agent providers from path: {}. Providers will be loaded using default pretrained model. Error: {}".format(
+                    pretrained_model_dir, e
+                ),
+            )
             self.init_default_providers()
 
     def __del__(self):
@@ -185,10 +179,29 @@ class Agent:
                 tokenizer=self.tokenizer,
             )
             set_seed(67)
-            generator("Hello!", padding=False, truncation=True, max_new_tokens=10)
+            generator(
+                "Hello!", padding=False, truncation=True, max_new_tokens=10
+            )
             Logger.log(log_level, "Generator warmed up successfully.")
         except Exception as e:
             Logger.log(
                 LogLevel.ERROR,
                 f"Failed to warm up generator. Initial prompts may take longer than expected. Error: {e}",
             )
+
+
+    @staticmethod
+    def get_most_recent_training_results(directory):
+        """
+        Loads the most recent model from the specified directory.
+        Assumes that the models are saved to folders which follow a regular naming convention
+        which ends in a timestamp.
+        """
+
+        folders = [
+            f
+            for f in os.listdir(directory)
+            if os.path.isdir(os.path.join(directory, f))
+        ]
+        # Return the alphabetically last folder name
+        return directory + max(folders) if folders else None

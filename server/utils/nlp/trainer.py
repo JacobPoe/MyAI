@@ -39,7 +39,11 @@ class Trainer:
 
     def init_trainer(self):
         training_args.output_dir = (
-            PRETRAINED_MODEL_DIR + "/results/" + PRETRAINED_MODEL_DEFAULT + "__" + str(time.time())
+            PRETRAINED_MODEL_DIR
+            + "/results/"
+            + PRETRAINED_MODEL_DEFAULT
+            + "__"
+            + str(time.time())
         )
         training_args.logging_dir = PRETRAINED_MODEL_DIR + "/logs"
 
