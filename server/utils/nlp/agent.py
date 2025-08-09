@@ -17,9 +17,6 @@ from utils.enums import (
 from utils.logger import Logger
 from utils.nlp.synthesizer import Synthesizer
 
-# TODO: Read in the conversation history from a JSON file
-conversation_history: list = []
-DEBUG: bool
 log_level: LogLevel = LogLevel.MODEL
 
 PRETRAINED_MODEL_DIR = EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value)
@@ -30,7 +27,7 @@ PRETRAINED_MODEL_DEFAULT = EnvService.get(
 
 class Agent:
     def __init__(self, debug: bool = False):
-        Logger.log(log_level, "Initializing Chatbot...")
+        Logger.log(log_level, "Initializing Agent...")
         self.DEBUG = debug
         self.conversation_history = []
 
@@ -72,11 +69,11 @@ class Agent:
         set_seed(67)
         generator("Hello!", padding=False, truncation=True, max_new_tokens=10)
 
-        Logger.log(log_level, "Chatbot initialized successfully.")
+        Logger.log(log_level, "Agent initialized successfully.")
 
     def __del__(self):
         Logger.save_log(log_level, self.conversation_history)
-        Logger.log(log_level, "Chatbot instance destroyed.")
+        Logger.log(log_level, "Agent instance destroyed.")
 
     def generate_reply(self, user_input: str):
         # Encode the input and add conversation history for context
