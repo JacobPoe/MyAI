@@ -18,62 +18,62 @@ from utils.logger import Logger
 from utils.nlp.synthesizer import Synthesizer
 
 log_level: LogLevel = LogLevel.AGENT
+default_model = Models.GPT2.value
 
 PRETRAINED_MODEL_DIR = EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value)
-PRETRAINED_MODEL_DEFAULT = EnvService.get(
-    EnvVars.PRETRAINED_MODEL_DEFAULT.value
+SELECTED_PRETRAINED_MODEL = EnvService.get(
+    EnvVars.SELECTED_PRETRAINED_MODEL.value
 )
 
 
 class Agent:
     def __init__(self, debug: bool = False):
         Logger.log(log_level, "Initializing Agent...")
-        self.DEBUG = debug
         self.conversation_history = []
-
-        self.tokenizer = GPT2Tokenizer.from_pretrained(Models.GPT2.value)
-        self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.DEBUG = debug
+        self.model = None
+        self.tokenizer = None
 
         pretrained_model_dir = EnvService.get(
             EnvVars.PRETRAINED_MODEL_DIR.value
         )
-        pretrained_model_default = EnvService.get(
-            EnvVars.PRETRAINED_MODEL_DEFAULT.value
+        selected_pretrained_model = EnvService.get(
+            EnvVars.SELECTED_PRETRAINED_MODEL.value
         )
-        if os.path.exists(pretrained_model_dir + pretrained_model_default):
+        if os.path.exists(pretrained_model_dir + selected_pretrained_model):
             try:
                 self.model = GPT2LMHeadModel.from_pretrained(
-                    pretrained_model_dir + pretrained_model_default
+                    pretrained_model_dir + selected_pretrained_model
                 )
+                self.tokenizer = GPT2Tokenizer.from_pretrained(
+                    pretrained_model_dir + selected_pretrained_model
+                )
+                self.set_token_padding()
+                Logger.log(log_level, "Agent initialized successfully.")
             except Exception as e:
                 Logger.log(
                     LogLevel.ERROR,
-                    "Failed to load model from path: {}{}. Default model will be loaded. Error: {}".format(
-                        pretrained_model_dir, pretrained_model_default, e
+                    "Failed to load agent providers from path: {}{}. Providers will be loaded using default pretrained model. Error: {}".format(
+                        pretrained_model_dir, selected_pretrained_model, e
                     ),
                 )
-                self.model = None
+                self.init_default_providers()
         else:
-            Logger.log(log_level, "Loading default model 'gpt2'.")
-            self.model = None
-
-        if self.model is None:
-            self.model = GPT2LMHeadModel.from_pretrained("gpt2")
-
-        self.model.config.pad_token_id = self.model.config.eos_token_id
-        generator = pipeline(
-            Tasks.TEXT_GENERATION.value,
-            model=self.model,
-            tokenizer=self.tokenizer,
-        )
-        set_seed(67)
-        generator("Hello!", padding=False, truncation=True, max_new_tokens=10)
-
-        Logger.log(log_level, "Agent initialized successfully.")
+            self.init_default_providers()
 
     def __del__(self):
         Logger.save_log(log_level, self.conversation_history)
         Logger.log(log_level, "Agent instance destroyed.")
+
+    def init_default_providers(self):
+        if self.model is None:
+            self.model = GPT2LMHeadModel.from_pretrained(default_model)
+
+        if self.tokenizer is None:
+            self.tokenizer = GPT2Tokenizer.from_pretrained(default_model)
+
+        self.set_token_padding()
+        Logger.log(log_level, "Agent initialized using default providers.")
 
     def generate_reply(self, user_input: str):
         # Encode the input and add conversation history for context
@@ -172,3 +172,23 @@ class Agent:
             audio_base64 = Synthesizer.generate_audio(reply)
 
         return {"reply": reply, "audio": audio_base64}
+
+    def set_token_padding(self):
+        self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.model.config.pad_token_id = self.model.config.eos_token_id
+
+    def warm_up_generator(self):
+        try:
+            generator = pipeline(
+                Tasks.TEXT_GENERATION.value,
+                model=self.model,
+                tokenizer=self.tokenizer,
+            )
+            set_seed(67)
+            generator("Hello!", padding=False, truncation=True, max_new_tokens=10)
+            Logger.log(log_level, "Generator warmed up successfully.")
+        except Exception as e:
+            Logger.log(
+                LogLevel.ERROR,
+                f"Failed to warm up generator. Initial prompts may take longer than expected. Error: {e}",
+            )

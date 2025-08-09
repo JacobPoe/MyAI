@@ -17,6 +17,9 @@ SERVER_PORT = EnvService.get(EnvVars.SERVER_PORT.value)
 
 # Initialize the LLM instance
 agent = Agent(DEBUG)
+agent.warm_up_generator()
+
+# Initialize the dataset training module
 trainer = Trainer(model=agent.model, tokenizer=agent.tokenizer)
 
 app = Flask(__name__)
