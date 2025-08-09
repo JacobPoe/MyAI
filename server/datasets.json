@@ -16,13 +16,53 @@
   },
   {
     "name": "Awesome ChatGPT Prompts",
-    "active": true,
+    "active": false,
     "hf_id": "fka/awesome-chatgpt-prompts",
     "pattern": "<Act>{}</Act><Prompt>{}</Prompt>",
     "columns": ["act", "prompt"],
     "config_type": "default",
     "reference": {
       "url": "https://github.com/f/awesome-chatgpt-prompts"
+    },
+    "split": "train"
+  },
+  {
+    "name": "Wide Search",
+    "active": false,
+    "hf_id": "ByteDance-Seed/WideSearch",
+    "pattern": "<Query>{}</Query><Evaluation>{}</Evaluation>",
+    "columns": ["query", "evaluation", "language"],
+    "config_type": "default",
+    "reference": {
+      "title": "WideSearch: Benchmarking Agentic Broad Info-Seeking",
+      "authors": [
+        "Wong, Ryan",
+        "Wang, Jiawei",
+        "Zhao, Junjie",
+        "Chen, Li",
+        "Gao, Yan",
+        "Zhang, Long",
+        "Zhou, Xuan",
+        "Wang, Zuo",
+        "Xiang, Kai",
+        "Wang, Yang",
+        "Wang, Ke"
+      ],
+      "journal": "arXiv preprint arXiv:XXXX.XXXXX",
+      "year": 2025,
+      "note": "Project Page: https://github.com/xx/WideSearch"
+    },
+    "split": "full"
+  },
+  {
+    "name": "Doc Formats CSV 1",
+    "active": true,
+    "hf_id": "datasets-examples/doc-formats-csv-1",
+    "pattern": "<Question>What sound does a {} make?</Question><Answer>{}</Answer>",
+    "columns": ["kind", "sound"],
+    "config_type": "default",
+    "reference": {
+      "url": "https://huggingface.co/datasets/datasets-examples/doc-formats-csv-1"
     },
     "split": "train"
   }
