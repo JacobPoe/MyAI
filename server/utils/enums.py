@@ -6,12 +6,6 @@ class AudioRequestMode(Enum):
     TRANSCRIBE = "transcribe"
 
 
-# Huggingface datasets can be found at https://huggingface.co/datasets
-# Ex. https://huggingface.co/datasets/MegaScience/MegaScience
-class Dataset(Enum):
-    GSM8K = "openai/gsm8k"
-
-
 # Huggingface model documentation can be found by appending the model name to https://huggingface.co/
 # Ex. https://huggingface.co/openai/whisper-large-v3-turbo
 class Models(Enum):
