@@ -11,7 +11,7 @@ from transformers import (
     pipeline,
 )
 
-from utils.enums import Models, Tasks
+from utils.nlp.enums import Models, Tasks
 from utils.logger import Logger, LogLevel
 
 Logger.log(LogLevel.INFO, "Initializing STT model...")

@@ -7,7 +7,7 @@ from services.audio import AudioService
 from services.env import EnvService, EnvVars
 from services.sanitize import SanitizeService
 
-from utils.enums import (
+from utils.nlp.enums import (
     AudioRequestMode,
     Models,
     PipelineFrameworks,
