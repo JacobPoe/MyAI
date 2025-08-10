@@ -3,8 +3,7 @@ from flask_cors import CORS
 
 from services.env import EnvService, EnvVars
 
-from utils.enums import LogLevel
-from utils.logger import Logger
+from utils.logger import Logger, LogLevel
 from utils.nlp.agent import Agent
 from utils.nlp.trainer import Trainer
 

@@ -11,8 +11,8 @@ from transformers import (
     pipeline,
 )
 
-from utils.enums import LogLevel, Models, Tasks
-from utils.logger import Logger
+from utils.enums import Models, Tasks
+from utils.logger import Logger, LogLevel
 
 Logger.log(LogLevel.INFO, "Initializing STT model...")
 stt_model = AutoModelForSpeechSeq2Seq.from_pretrained(

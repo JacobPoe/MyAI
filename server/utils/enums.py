@@ -12,17 +12,6 @@ class Dataset(Enum):
     GSM8K = "openai/gsm8k"
 
 
-class LogLevel(Enum):
-    AGENT = "AGENT"
-    CAPTION = "CAPTION"
-    DATA = "DATA"
-    DEBUG = "DEBUG"
-    ERROR = "ERROR"
-    INFO = "INFO"
-    SYNTHESIZER = "SYNTH"
-    TRAINER = "TRAINER"
-
-
 # Huggingface model documentation can be found by appending the model name to https://huggingface.co/
 # Ex. https://huggingface.co/openai/whisper-large-v3-turbo
 class Models(Enum):

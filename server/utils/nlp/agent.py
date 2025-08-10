@@ -9,12 +9,11 @@ from services.sanitize import SanitizeService
 
 from utils.enums import (
     AudioRequestMode,
-    LogLevel,
     Models,
     PipelineFrameworks,
     Tasks,
 )
-from utils.logger import Logger
+from utils.logger import Logger, LogLevel
 from utils.nlp.synthesizer import Synthesizer
 
 log_level: LogLevel = LogLevel.AGENT
@@ -188,7 +187,6 @@ class Agent:
                 LogLevel.ERROR,
                 f"Failed to warm up generator. Initial prompts may take longer than expected. Error: {e}",
             )
-
 
     @staticmethod
     def get_most_recent_training_results(directory):
