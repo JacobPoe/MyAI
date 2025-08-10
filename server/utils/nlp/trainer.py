@@ -3,10 +3,10 @@ import os
 import time
 
 from services.env import EnvService, EnvVars
-from utils.enums import TrainingRequestOpts
 from utils.logger import Logger, LogLevel
 
 from datasets import load_dataset, concatenate_datasets
+from enum import Enum
 from transformers import (
     GPT2Tokenizer,
     Trainer as T,
@@ -29,6 +29,10 @@ training_args = TrainingArguments(
     prediction_loss_only=True,
     push_to_hub=False,
 )
+
+
+class TrainingRequestOpts(Enum):
+    RESUME_FROM_CHECKPOINT = "resume_from_checkpoint"
 
 
 class Trainer:
@@ -72,7 +76,7 @@ class Trainer:
             self.init_trainer()
             self.trainer.train(
                 resume_from_checkpoint=opts.get(
-                    TrainingRequestOpts.RESUME_FROM_CHECKPOINT.value
+                    TrainingRequestOpts.RESUME_FROM_CHECKPOINT
                 )
             )
             self.handle_training_end()
