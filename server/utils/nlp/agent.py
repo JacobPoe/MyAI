@@ -77,7 +77,7 @@ class Agent:
         input_text = f"{conversation_context} {user_input}"
         encoded_input = self.tokenizer(
             input_text, return_tensors=PipelineFrameworks.PYTORCH.value
-        ).to("cuda")
+        )
 
         # Generate the output with adjusted parameters
         model_output = self.model.generate(
