@@ -3,8 +3,7 @@ import scipy.io.wavfile as wav
 
 from pydub import AudioSegment
 
-from utils.enums import LogLevel
-from utils.logger import Logger
+from utils.logger import Logger, LogLevel
 
 
 class AudioService:

@@ -2,14 +2,24 @@ import json
 import os
 
 from datetime import datetime
+from enum import Enum
 
-from utils.enums import LogLevel
+
+class LogLevel(Enum):
+    AGENT = "AGENT"
+    CAPTION = "CAPTION"
+    DATA = "DATA"
+    DEBUG = "DEBUG"
+    ERROR = "ERROR"
+    INFO = "INFO"
+    SYNTHESIZER = "SYNTH"
+    TRAINER = "TRAINER"
 
 
 class Logger:
     @staticmethod
     def log(level: LogLevel, message: str):
-        # TODO: Control flow to check if level is part of enum
+        assert LogLevel(level) is not None, f"Invalid log level: {level}"
         print(f"[MyAI-{level.value}] :: {message}")
 
     @staticmethod
