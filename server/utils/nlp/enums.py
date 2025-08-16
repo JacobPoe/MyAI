@@ -14,6 +14,10 @@ class Models(Enum):
     WHISPER_LARGE_V3_TURBO = "openai/whisper-large-v3-turbo"
 
 
+class Tokenizers(Enum):
+    GPT2 = "gpt2"
+
+
 class PipelineFrameworks(Enum):
     PYTORCH = "pt"
 

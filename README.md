@@ -69,6 +69,11 @@ This project uses the following datasets as its baseline training data. Its impo
 - [fka/awesome-chatgpt-prompts](https://huggingface.co/datasets/fka/awesome-chatgpt-prompts)
 - [openai/gsm8k](https://huggingface.co/datasets/openai/gsm8k/)
 
+# System requirements
+- [Cuda System Toolkit](https://developer.nvidia.com/cuda-downloads)
+- [CUDA-compatible PyTorch](https://pytorch.org/)
+  - Including `pytorch` in `requirements.txt` by default installs the PyTorch build which is only compatible with the CPU.
+
 # References
 
 ## Projects
