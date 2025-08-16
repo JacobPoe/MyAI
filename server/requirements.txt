@@ -1,20 +1,18 @@
-# Python 3.10.15
+# Python 3.13
 
-# Project dependencies
-accelerate>=0.26.0
+# Dependencies
+accelerate>=0.26.0 # Resolve error "ImportError: Using the `Trainer` with `PyTorch` requires `accelerate>=0.26.0`"
+audioop-lts # Resolve issue with deprecated pydub dependency
 datasets
-Flask~=3.0.3
-Flask-Cors~=5.0.0
-kernels
-numpy~=1.26.4
-pillow~=10.4.0
-protobuf
-pydub~=0.25.1
-python-dotenv~=1.0.1
-scipy~=1.14.1
-setuptools~=78.1.1
-torch~=2.7.1
-transformers~=4.52.1
+Flask
+Flask-Cors
+numpy
+pillow
+pydub
+python-dotenv
+scipy
+setuptools
+transformers
 
 # Linting tools
 black
@@ -27,3 +25,12 @@ pylint
 
 services
 utils
+
+########################################################################################################################
+# torch
+# torchaudio
+# torchvision
+# Importing torch, torchaudio, and torchvision would cause compatibility issues when using CUDA on some systems.
+# It's recommended to install these packages separately based on your system's configuration.
+# e.g., pip3 install torch torchaudio torchvision --index-url https://download.pytorch.org/whl/cu128
+# See https://pytorch.org/

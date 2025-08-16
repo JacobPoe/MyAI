@@ -1,7 +1,7 @@
 import os
 import time
 
-from transformers import GPT2Tokenizer, GPT2LMHeadModel, pipeline, set_seed
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, set_seed
 
 from services.audio import AudioService
 from services.env import EnvService, EnvVars
@@ -12,12 +12,14 @@ from utils.nlp.enums import (
     Models,
     PipelineFrameworks,
     Tasks,
+    Tokenizers,
 )
 from utils.logger import Logger, LogLevel
 from utils.nlp.synthesizer import Synthesizer
 
 log_level: LogLevel = LogLevel.AGENT
 default_model = Models.GPT2.value
+default_tokenizer = Tokenizers.GPT2.value
 
 PRETRAINED_MODEL_DIR = EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value)
 SELECTED_PRETRAINED_MODEL = EnvService.get(
@@ -38,11 +40,10 @@ class Agent:
         )
 
         try:
+            self.synthesizer = Synthesizer()
             path = Agent.get_most_recent_training_results(pretrained_model_dir)
-            self.model = GPT2LMHeadModel.from_pretrained(
-                path, use_safetensors=True
-            )
-            self.tokenizer = GPT2Tokenizer.from_pretrained(default_model)
+            self.model = Agent.get_model_from_pretrained(path)
+            self.tokenizer = Agent.get_tokenizer_from_pretrained()
             self.set_token_padding()
             Logger.log(log_level, "Agent initialized successfully.")
         except Exception as e:
@@ -60,10 +61,10 @@ class Agent:
 
     def init_default_providers(self):
         if self.model is None:
-            self.model = GPT2LMHeadModel.from_pretrained(default_model)
+            self.model = Agent.get_model_from_pretrained()
 
         if self.tokenizer is None:
-            self.tokenizer = GPT2Tokenizer.from_pretrained(default_model)
+            self.tokenizer = Agent.get_tokenizer_from_pretrained()
 
         self.set_token_padding()
         Logger.log(log_level, "Agent initialized using default providers.")
@@ -76,7 +77,7 @@ class Agent:
         input_text = f"{conversation_context} {user_input}"
         encoded_input = self.tokenizer(
             input_text, return_tensors=PipelineFrameworks.PYTORCH.value
-        )
+        ).to("cuda")
 
         # Generate the output with adjusted parameters
         model_output = self.model.generate(
@@ -123,14 +124,14 @@ class Agent:
         # Load the raw audio data from the request and transcribe it
         # TODO: Do I need to transcribe audio to text first in order to provide a prompt to call self.generate_reply?
         audio_data = AudioService.load_audio(request.data)
-        request_transcription = Synthesizer.stt_pipeline(audio_data)
+        request_transcription = self.synthesizer.stt_pipeline(audio_data)
 
         # If the request is a question, generate a reply from the model using the input transcription as a prompt
         if headers.get("mode") == AudioRequestMode.QUESTION.value:
             reply = self.generate_reply(request_transcription.get("text", ""))
 
         if headers.get("narrateResponse") == "true":
-            audio = Synthesizer.generate_audio(reply)
+            audio = self.synthesizer.generate_audio(reply)
 
         return {
             "reply": reply,
@@ -162,7 +163,7 @@ class Agent:
 
         # If the user requested an STT response
         if headers.get("narrateResponse") == "true":
-            audio_base64 = Synthesizer.generate_audio(reply)
+            audio_base64 = self.synthesizer.generate_audio(reply)
 
         return {"reply": reply, "audio": audio_base64}
 
@@ -203,3 +204,13 @@ class Agent:
         ]
         # Return the alphabetically last folder name
         return directory + max(folders) if folders else None
+
+    @staticmethod
+    def get_model_from_pretrained(model: str = default_model):
+        return AutoModelForCausalLM.from_pretrained(
+            model, use_safetensors=True, torch_dtype="auto", device_map="auto"
+        )
+
+    @staticmethod
+    def get_tokenizer_from_pretrained(tokenizer: str = default_tokenizer):
+        return AutoTokenizer.from_pretrained(tokenizer)
