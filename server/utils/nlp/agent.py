@@ -79,6 +79,10 @@ class Agent:
             input_text, return_tensors=PipelineFrameworks.PYTORCH.value
         )
 
+        # Move tensors to the same device as the model
+        device = next(self.model.parameters()).device
+        encoded_input = {k: v.to(device) for k, v in encoded_input.items()}
+
         # Generate the output with adjusted parameters
         model_output = self.model.generate(
             **encoded_input,
