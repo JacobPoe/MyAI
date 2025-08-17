@@ -30,7 +30,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 @app.route(ROUTE_IS_ALIVE, methods=["GET"])
 def route_is_alive():
     try:
-        response = agent.warm_up_generator()
+        response = agent.wake_agent()
         return jsonify(response), 200
     except Exception as e:
         Logger.log(LogLevel.ERROR, f"Failed to wake agent, {e}")

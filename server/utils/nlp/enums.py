@@ -6,6 +6,12 @@ class AudioRequestMode(Enum):
     TRANSCRIBE = "transcribe"
 
 
+class DeviceMap(Enum):
+    AUTO = "auto"
+    CPU = "cpu"
+    CUDA = "cuda"
+
+
 # Huggingface model documentation can be found by appending the model name to https://huggingface.co/
 # Ex. https://huggingface.co/openai/whisper-large-v3-turbo
 class Models(Enum):
@@ -13,11 +19,6 @@ class Models(Enum):
     QWEN3 = "Qwen/Qwen3-235B-A22B-Thinking-2507-FP8"
     SUNO_BARK = "suno/bark"
     WHISPER_LARGE_V3_TURBO = "openai/whisper-large-v3-turbo"
-
-
-class Tokenizers(Enum):
-    GPT2 = "gpt2"
-    QWEN3 = "Qwen/Qwen3-235B-A22B-Thinking-2507-FP8"
 
 
 class PipelineFrameworks(Enum):

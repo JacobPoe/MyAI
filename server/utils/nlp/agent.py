@@ -1,5 +1,7 @@
+import json
 import os
 import time
+import torch
 
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, set_seed
 
@@ -9,17 +11,17 @@ from services.sanitize import SanitizeService
 
 from utils.nlp.enums import (
     AudioRequestMode,
+    DeviceMap,
     Models,
-    PipelineFrameworks,
+    Roles,
     Tasks,
-    Tokenizers,
 )
 from utils.logger import Logger, LogLevel
 from utils.nlp.synthesizer import Synthesizer
 
 LOG_LEVEL: LogLevel = LogLevel.AGENT
 DEFAULT_MODEL = EnvService.get(EnvVars.DEFAULT_MODEL.value, Models.QWEN3.value)
-DEFAULT_TOKENIZER = EnvService.get(EnvVars.DEFAULT_TOKENIZER.value, Tokenizers.QWEN3.value)
+DEVICE_MAP = EnvService.get(EnvVars.DEVICE_MAP.value, DeviceMap.AUTO.value)
 PRETRAINED_MODEL_DIR = EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value)
 SELECTED_PRETRAINED_MODEL = EnvService.get(
     EnvVars.SELECTED_PRETRAINED_MODEL.value
@@ -31,8 +33,10 @@ class Agent:
         Logger.log(LOG_LEVEL, "Initializing Agent...")
         self.conversation_history = []
         self.DEBUG = debug
+        self.agent_config = None
         self.model = None
         self.tokenizer = None
+        self.pipeline = None
 
         pretrained_model_dir = (
             EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value) + "/results/"
@@ -41,9 +45,8 @@ class Agent:
         try:
             self.synthesizer = Synthesizer()
             path = Agent.get_most_recent_training_results(pretrained_model_dir)
-            self.model = Agent.get_model_from_pretrained(path)
             self.tokenizer = Agent.get_tokenizer_from_pretrained()
-            self.set_token_padding()
+            self.model = Agent.get_model_from_pretrained(path)
             Logger.log(LOG_LEVEL, "Agent initialized successfully.")
         except Exception as e:
             Logger.log(
@@ -69,38 +72,23 @@ class Agent:
         Logger.log(LOG_LEVEL, "Agent initialized using default providers.")
 
     def generate_reply(self, user_input: str):
-        # Encode the input and add conversation history for context
-        conversation_context = " ".join(
-            [entry.get("user_input") for entry in self.conversation_history]
-        )
-        input_text = f"{conversation_context} {user_input}"
-        encoded_input = self.tokenizer(
-            input_text, return_tensors=PipelineFrameworks.PYTORCH.value
+        Agent.record_interaction_to_history(
+            self.conversation_history, Roles.USER, user_input
         )
 
-        # Move tensors to the same device as the model
-        device = next(self.model.parameters()).device
-        encoded_input = {k: v.to(device) for k, v in encoded_input.items()}
+        if self.pipeline is None:
+            self.wake_agent()
+        response = self.pipeline(
+            self.conversation_history[-1]["content"],
+            padding=False,
+            truncation=True,
+            max_length=self.tokenizer.model_max_length,
+        )[0]["generated_text"]
 
-        # Generate the output with adjusted parameters
-        model_output = self.model.generate(
-            **encoded_input
+        Agent.record_interaction_to_history(
+            self.conversation_history, Roles.AGENT, response
         )
-
-        output = self.tokenizer.decode(
-            model_output[0]
-        )
-        Logger.log(LOG_LEVEL, output)
-
-        self.conversation_history.append(
-            {
-                "timestamp": int(time.time()),
-                "user_input": user_input,
-                "bot_output": output,
-            }
-        )
-
-        return output
+        return response
 
     def handle_audio_prompt(self, request):
         headers = SanitizeService.decode_headers(request.query_string)
@@ -171,22 +159,63 @@ class Agent:
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.model.config.pad_token_id = self.model.config.eos_token_id
 
-    def warm_up_generator(self):
+    def wake_agent(self):
         try:
-            generator = pipeline(
-                Tasks.TEXT_GENERATION.value,
+            config_path = os.path.join(
+                os.path.abspath(os.path.join(__file__, "../../../config")),
+                "agent.json",
+            )
+            Logger.log(
+                LogLevel.AGENT, f"Loading agent config from: {config_path}"
+            )
+            with open(config_path, "r", encoding="utf-8") as f:
+                self.agent_config = json.load(f)
+                Logger.log(
+                    LogLevel.AGENT, f"Agent config loaded: {self.agent_config}"
+                )
+
+            seed = self.agent_config.get("seed", 67)
+            startup_prompt = self.agent_config.get("startup_prompt", "")
+
+            if (
+                self.tokenizer.pad_token is None
+                and self.tokenizer.eos_token is not None
+            ):
+                self.set_token_padding()
+
+            max_ctx = getattr(
+                self.model.config, "max_position_embeddings", None
+            ) or getattr(self.model.config, "n_positions", None)
+            if max_ctx is not None:
+                self.tokenizer.model_max_length = max_ctx
+
+            emb_rows = self.model.get_input_embeddings().weight.shape[0]
+            if emb_rows != len(self.tokenizer):
+                self.model.resize_token_embeddings(len(self.tokenizer))
+
+            self.pipeline = pipeline(
+                task=Tasks.TEXT_GENERATION.value,
                 model=self.model,
                 tokenizer=self.tokenizer,
+                max_new_tokens=128,
             )
-            set_seed(67)
-            generator(
-                "Hello!", padding=False, truncation=True, max_new_tokens=10
+            set_seed(seed)
+            startup_msg = self.pipeline(
+                startup_prompt,
+                padding=False,
+                truncation=True,
+                max_length=self.tokenizer.model_max_length,
+            )[0]["generated_text"]
+
+            Agent.record_interaction_to_history(
+                self.conversation_history, Roles.AGENT, startup_msg
             )
-            Logger.log(LOG_LEVEL, "Generator warmed up successfully.")
+            return startup_msg
+
         except Exception as e:
             Logger.log(
                 LogLevel.ERROR,
-                f"Failed to warm up generator. Initial prompts may take longer than expected. Error: {e}",
+                f"Failed to initialize agent. Initial prompts may take longer than expected. Error: {e}",
             )
 
     @staticmethod
@@ -208,9 +237,25 @@ class Agent:
     @staticmethod
     def get_model_from_pretrained(model: str = DEFAULT_MODEL):
         return AutoModelForCausalLM.from_pretrained(
-            model, use_safetensors=True, torch_dtype="auto", device_map="auto"
+            model,
+            use_safetensors=True,
+            torch_dtype=torch.float32,
+            device_map=DEVICE_MAP,
         )
 
     @staticmethod
-    def get_tokenizer_from_pretrained(tokenizer: str = DEFAULT_TOKENIZER):
-        return AutoTokenizer.from_pretrained(tokenizer)
+    def get_tokenizer_from_pretrained(model: str = DEFAULT_MODEL):
+        return AutoTokenizer.from_pretrained(model)
+
+    @staticmethod
+    def record_interaction_to_history(
+        history: list, role: Roles, content: str | set
+    ):
+        history.append(
+            {
+                "timestamp": int(time.time()),
+                "role": role.value,
+                "content": content,
+            }
+        )
+        Logger.log(LogLevel.AGENT, f"Interaction saved: {history[-1]}")
