@@ -12,6 +12,7 @@ from services.sanitize import SanitizeService
 from utils.nlp.enums import (
     AudioRequestMode,
     DeviceMap,
+    PipelineFrameworks,
     Models,
     Roles,
     Tasks,
@@ -78,12 +79,21 @@ class Agent:
 
         if self.pipeline is None:
             self.wake_agent()
-        response = self.pipeline(
-            self.conversation_history[-1]["content"],
-            padding=False,
-            truncation=True,
-            max_length=self.tokenizer.model_max_length,
-        )[0]["generated_text"]
+
+        text = self.tokenizer.apply_chat_template(
+            self.conversation_history,
+            tokenize=False,
+            add_generation_prompt=True
+        )
+        model_inputs = self.tokenizer([text], return_tensors=PipelineFrameworks.PYTORCH.value).to(self.model.device)
+
+        generated_ids = self.model.generate(
+            **model_inputs
+        )
+        output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist()
+        response = self.tokenizer.decode(
+            output_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True
+        )
 
         Agent.record_interaction_to_history(
             self.conversation_history, Roles.AGENT, response
