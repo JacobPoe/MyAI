@@ -84,14 +84,11 @@ class Agent:
 
         # Generate the output with adjusted parameters
         model_output = self.model.generate(
-            **encoded_input,
-            max_new_tokens=128,
-            top_k=50,
-            no_repeat_ngram_size=2,
+            **encoded_input
         )
 
         output = self.tokenizer.decode(
-            model_output[0], skip_special_tokens=False
+            model_output[0]
         )
         Logger.log(LOG_LEVEL, output)
 
