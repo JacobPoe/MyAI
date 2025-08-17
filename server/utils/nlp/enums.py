@@ -10,12 +10,14 @@ class AudioRequestMode(Enum):
 # Ex. https://huggingface.co/openai/whisper-large-v3-turbo
 class Models(Enum):
     GPT2 = "gpt2"
+    QWEN3 = "Qwen/Qwen3-235B-A22B-Thinking-2507-FP8"
     SUNO_BARK = "suno/bark"
     WHISPER_LARGE_V3_TURBO = "openai/whisper-large-v3-turbo"
 
 
 class Tokenizers(Enum):
     GPT2 = "gpt2"
+    QWEN3 = "Qwen/Qwen3-235B-A22B-Thinking-2507-FP8"
 
 
 class PipelineFrameworks(Enum):

@@ -17,10 +17,9 @@ from utils.nlp.enums import (
 from utils.logger import Logger, LogLevel
 from utils.nlp.synthesizer import Synthesizer
 
-log_level: LogLevel = LogLevel.AGENT
-default_model = Models.GPT2.value
-default_tokenizer = Tokenizers.GPT2.value
-
+LOG_LEVEL: LogLevel = LogLevel.AGENT
+DEFAULT_MODEL = EnvService.get(EnvVars.DEFAULT_MODEL.value, Models.QWEN3.value)
+DEFAULT_TOKENIZER = EnvService.get(EnvVars.DEFAULT_TOKENIZER.value, Tokenizers.QWEN3.value)
 PRETRAINED_MODEL_DIR = EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value)
 SELECTED_PRETRAINED_MODEL = EnvService.get(
     EnvVars.SELECTED_PRETRAINED_MODEL.value
@@ -29,7 +28,7 @@ SELECTED_PRETRAINED_MODEL = EnvService.get(
 
 class Agent:
     def __init__(self, debug: bool = False):
-        Logger.log(log_level, "Initializing Agent...")
+        Logger.log(LOG_LEVEL, "Initializing Agent...")
         self.conversation_history = []
         self.DEBUG = debug
         self.model = None
@@ -45,7 +44,7 @@ class Agent:
             self.model = Agent.get_model_from_pretrained(path)
             self.tokenizer = Agent.get_tokenizer_from_pretrained()
             self.set_token_padding()
-            Logger.log(log_level, "Agent initialized successfully.")
+            Logger.log(LOG_LEVEL, "Agent initialized successfully.")
         except Exception as e:
             Logger.log(
                 LogLevel.ERROR,
@@ -56,8 +55,8 @@ class Agent:
             self.init_default_providers()
 
     def __del__(self):
-        Logger.save_log(log_level, self.conversation_history)
-        Logger.log(log_level, "Agent instance destroyed.")
+        Logger.save_log(LOG_LEVEL, self.conversation_history)
+        Logger.log(LOG_LEVEL, "Agent instance destroyed.")
 
     def init_default_providers(self):
         if self.model is None:
@@ -67,7 +66,7 @@ class Agent:
             self.tokenizer = Agent.get_tokenizer_from_pretrained()
 
         self.set_token_padding()
-        Logger.log(log_level, "Agent initialized using default providers.")
+        Logger.log(LOG_LEVEL, "Agent initialized using default providers.")
 
     def generate_reply(self, user_input: str):
         # Encode the input and add conversation history for context
@@ -94,7 +93,7 @@ class Agent:
         output = self.tokenizer.decode(
             model_output[0], skip_special_tokens=False
         )
-        Logger.log(log_level, output)
+        Logger.log(LOG_LEVEL, output)
 
         self.conversation_history.append(
             {
@@ -186,7 +185,7 @@ class Agent:
             generator(
                 "Hello!", padding=False, truncation=True, max_new_tokens=10
             )
-            Logger.log(log_level, "Generator warmed up successfully.")
+            Logger.log(LOG_LEVEL, "Generator warmed up successfully.")
         except Exception as e:
             Logger.log(
                 LogLevel.ERROR,
@@ -210,11 +209,11 @@ class Agent:
         return directory + max(folders) if folders else None
 
     @staticmethod
-    def get_model_from_pretrained(model: str = default_model):
+    def get_model_from_pretrained(model: str = DEFAULT_MODEL):
         return AutoModelForCausalLM.from_pretrained(
             model, use_safetensors=True, torch_dtype="auto", device_map="auto"
         )
 
     @staticmethod
-    def get_tokenizer_from_pretrained(tokenizer: str = default_tokenizer):
+    def get_tokenizer_from_pretrained(tokenizer: str = DEFAULT_TOKENIZER):
         return AutoTokenizer.from_pretrained(tokenizer)
