@@ -80,12 +80,18 @@ class Agent:
         if self.pipeline is None:
             self.wake_agent()
 
-        text = self.tokenizer.apply_chat_template(
-            self.conversation_history,
-            tokenize=False,
-            add_generation_prompt=True
-        )
-        model_inputs = self.tokenizer([text], return_tensors=PipelineFrameworks.PYTORCH.value).to(self.model.device)
+        to_tokenize = None
+        if self.tokenizer.chat_template is not None:
+            Logger.log(LogLevel.AGENT, "Using tokenizer's built-in chat template for tokenization.")
+            to_tokenize = self.tokenizer.apply_chat_template(
+                self.conversation_history,
+                tokenize=False,
+                add_generation_prompt=True
+            )
+        else:
+            to_tokenize = "\n".join(str(attr) for attr in self.conversation_history[-1])
+
+        model_inputs = self.tokenizer([to_tokenize], return_tensors=PipelineFrameworks.PYTORCH.value).to(self.model.device)
 
         generated_ids = self.model.generate(
             **model_inputs
