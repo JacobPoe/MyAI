@@ -24,6 +24,11 @@ class PipelineFrameworks(Enum):
     PYTORCH = "pt"
 
 
+class Roles(Enum):
+    AGENT = "agent"
+    USER = "user"
+
+
 class Tasks(Enum):
     ASR = "automatic-speech-recognition"
     TEXT_GENERATION = "text-generation"
