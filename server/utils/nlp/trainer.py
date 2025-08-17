@@ -109,7 +109,7 @@ class Trainer:
                 examples["text"],
                 padding="max_length",
                 truncation=True,
-                max_length=EnvService.get_int(EnvVars.MAX_LENGTH.value),
+                max_length=EnvService.get_int(EnvVars.MAX_NEW_TOKENS.value),
             )
             # For language modeling, the labels are the input_ids themselves
             tokenized["labels"] = tokenized["input_ids"].copy()

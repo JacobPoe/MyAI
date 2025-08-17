@@ -6,6 +6,11 @@ class AudioRequestMode(Enum):
     TRANSCRIBE = "transcribe"
 
 
+class ConfigType(Enum):
+    AGENT = "agent"
+    MODEL = "model"
+
+
 class DeviceMap(Enum):
     AUTO = "auto"
     CPU = "cpu"
