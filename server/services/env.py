@@ -28,7 +28,7 @@ load_dotenv()
 
 class EnvService:
     @staticmethod
-    def get(key: str, default=None) -> str | None:
+    def get(key: str, default=None) -> str:
         assert (
             EnvVars(key) is not None
         ), f"Invalid environment variable key: {key}"
