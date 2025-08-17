@@ -31,20 +31,23 @@ With this in mind I built on my original app.py and implemented the following:
 
 # Environment Variables
 
-| Key                       | ExampleValue     | Description                                                     |
-| ------------------------- | ---------------- | --------------------------------------------------------------- |
-| DEBUG                     | True             | Enable or disable debug mode.                                   |
-| SERVER_HOST               | 0.0.0.0          | Server address where local app is hosted.                       |
-| SERVER_PORT               | 1587             | Port number for your local application instance.                |
-| ROUTE_ASR                 | /api/v1/asr      | Endpoint for automatic-speech-recognition API.                  |
-| ROUTE_TTS                 | /api/v1/tts      | Endpoint for text-to-speech API.                                |
-| ROUTE_TRAINING_INIT       | /api/v1/training | Endpoint to initialize training loop for user defined datasets. |
-| STT_COMPUTATION_DEVICE    | cpu              | Device index for stt computation (e.g., GPU).                   |
-| STT_SAMPLE_RATE           | 16000            | Sample rate for speech-to-text processing.                      |
-| MAX_LENGTH                | 512              | Max number of tokens to generate when generating response.      |
-| TRAINING_ARGS_NUM_EPOCHS  | 3                | Number of training cycles to execute when training local model. |
-| PRETRAINED_MODEL_DIR      | C:/models        | Where on your local filesystem to save your trained models.     |
-| SELECTED_PRETRAINED_MODEL | my_example_model | User-defined name of the model being trained.                   |
+| Key                       | ExampleValue                    | Description                                                     |
+| ------------------------- | ------------------------------- | --------------------------------------------------------------- |
+| DEBUG                     | True                            | Enable or disable debug mode.                                   |
+| DEFAULT_MODEL             | openai/whisper-large-v3-turbo   | Identifier of the default model to load for inference.          |
+| DEVICE_MAP                | cuda                            | Device mapping used for model loading (e.g., `cpu`, `cuda`).    |
+| SELECTED_PRETRAINED_MODEL | local                           | User-defined name of the model being trained.                   |
+| PRETRAINED_MODEL_DIR      | C:/models/pretrained            | Where on your local filesystem to save your trained models.     |
+| TRAINING_ARGS_NUM_EPOCHS  | 2                               | Number of training cycles to execute when training local model. |
+| MAX_NEW_TOKENS            | 128                             | Maximum number of tokens to generate per inference step.        |
+| SERVER_HOST               | 0.0.0.0                         | Server address where local app is hosted.                       |
+| SERVER_PORT               | 1587                            | Port number for your local application instance.                |
+| ROUTE_ASR                 | /api/v1/asr                     | Endpoint for automatic-speech-recognition API.                  |
+| ROUTE_IS_ALIVE            | /api/v1/is_alive                | Endpoint for health check to verify service availability.       |
+| ROUTE_TTS                 | /api/v1/tts                     | Endpoint for text-to-speech API.                                |
+| ROUTE_TRAINING_INIT       | /api/v1/training                | Endpoint to initialize training loop for user defined datasets. |
+| STT_COMPUTATION_DEVICE    | cpu                             | Device index for stt computation (e.g., GPU).                   |
+| STT_SAMPLE_RATE           | 16000                           | Sample rate for speech-to-text processing.                      |
 
 # Datasets.json
 
