@@ -3,7 +3,7 @@ import os
 import time
 import torch
 
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline, set_seed
+from transformers import AutoTokenizer, AutoModelForCausalLM, set_seed
 
 from services.audio import AudioService
 from services.env import EnvService, EnvVars
@@ -15,8 +15,7 @@ from utils.nlp.enums import (
     DeviceMap,
     PipelineFrameworks,
     Models,
-    Roles,
-    Tasks,
+    Roles
 )
 from utils.logger import Logger, LogLevel
 from utils.nlp.synthesizer import Synthesizer
@@ -46,7 +45,6 @@ class Agent:
         self.model_config = None
         self.model = None
         self.tokenizer = None
-        self.pipeline = None
 
         pretrained_model_dir = (
             EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value) + "/results/"
@@ -54,9 +52,8 @@ class Agent:
 
         try:
             self.synthesizer = Synthesizer()
-            path = Agent.get_most_recent_training_results(pretrained_model_dir)
             self.tokenizer = Agent.get_tokenizer_from_pretrained()
-            self.model = Agent.get_model_from_pretrained(path)
+            self.init_model(pretrained_model_dir)
         except Exception as e:
             Logger.log(
                 LogLevel.ERROR,
@@ -70,23 +67,9 @@ class Agent:
         Logger.save_log(LogLevel.AGENT, self.conversation_history)
         Logger.log(LogLevel.AGENT, "Agent instance destroyed.")
 
-    def init_default_providers(self):
-        if self.model is None:
-            self.model = Agent.get_model_from_pretrained()
-
-        if self.tokenizer is None:
-            self.tokenizer = Agent.get_tokenizer_from_pretrained()
-
-        self.set_token_padding()
-        Logger.log(LogLevel.AGENT, "Agent initialized using default providers.")
-
     def generate_reply(self, user_input: str):
         self.record_interaction_to_history(Roles.USER, user_input)
 
-        if self.pipeline is None:
-            self.wake_agent()
-
-        to_tokenize = None
         if self.tokenizer.chat_template is not None:
             Logger.log(
                 LogLevel.AGENT,
@@ -98,14 +81,13 @@ class Agent:
                 add_generation_prompt=True,
             )
         else:
-            to_tokenize = "\n".join(
-                str(attr) for attr in self.conversation_history[-1]
-            )
+            to_tokenize = self.conversation_history[-1]["content"]
 
         model_inputs = self.tokenizer(
             [to_tokenize], return_tensors=PipelineFrameworks.PYTORCH.value
         ).to(self.model.device)
 
+        self.model.config.update(self.model_config)
         generated_ids = self.model.generate(
             **model_inputs,
             max_new_tokens=MAX_NEW_TOKENS,
@@ -182,6 +164,29 @@ class Agent:
 
         return {"reply": reply, "audio": audio_base64}
 
+    def init_default_providers(self):
+        if self.model is None:
+            self.init_model()
+
+        if self.tokenizer is None:
+            self.tokenizer = Agent.get_tokenizer_from_pretrained()
+
+        self.set_token_padding()
+        Logger.log(LogLevel.AGENT, "Agent initialized using default providers.")
+
+    def init_model(self, model_dir: str = DEFAULT_MODEL):
+        path = Agent.load_most_recently_trained_model(model_dir)
+        self.model = AutoModelForCausalLM.from_pretrained(
+            path,
+            use_safetensors=True,
+            torch_dtype=torch.float32,
+            device_map=DEVICE_MAP,
+        )
+
+        self.model_config = self.load_config(ConfigType.MODEL.value)
+        for k, v in self.model_config:
+            self.model.generation_config[k] = v
+
     def load_config(self, config_type: str):
         config_path = os.path.join(
             os.path.abspath(os.path.join(__file__, "../../../config")),
@@ -216,7 +221,10 @@ class Agent:
             }
         )
         if self.DEBUG:
-            Logger.log(LogLevel.AGENT, f"Interaction saved: {self.conversation_history[-1]}")
+            Logger.log(
+                LogLevel.AGENT,
+                f"Interaction saved: {self.conversation_history[-1]}",
+            )
 
     def set_token_padding(self):
         self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -228,9 +236,6 @@ class Agent:
         """
         try:
             self.agent_config = self.load_config(ConfigType.AGENT.value)
-            self.model_config = self.load_config(ConfigType.MODEL.value)
-
-            seed = self.agent_config.get("seed", 67)
             startup_prompt = self.agent_config.get("startup_prompt", "")
 
             if (
@@ -243,20 +248,11 @@ class Agent:
             if emb_rows != len(self.tokenizer):
                 self.model.resize_token_embeddings(len(self.tokenizer))
 
-            self.pipeline = pipeline(
-                task=Tasks.TEXT_GENERATION.value,
-                model=self.model,
-                tokenizer=self.tokenizer,
-            )
-            set_seed(seed)
-            startup_msg = self.pipeline(
-                startup_prompt,
-                padding=False,
-                truncation=True,
-                max_new_tokens=MAX_NEW_TOKENS,
-            )[0]["generated_text"]
+            set_seed(self.agent_config.get("seed", 67))
 
+            startup_msg = self.generate_reply(startup_prompt)
             self.record_interaction_to_history(Roles.AGENT, startup_msg)
+
             return startup_msg
 
         except Exception as e:
@@ -266,16 +262,11 @@ class Agent:
             )
 
     @staticmethod
-    def get_model_from_pretrained(model: str = DEFAULT_MODEL):
-        return AutoModelForCausalLM.from_pretrained(
-            model,
-            use_safetensors=True,
-            torch_dtype=torch.float32,
-            device_map=DEVICE_MAP,
-        )
+    def get_tokenizer_from_pretrained(model: str = DEFAULT_MODEL):
+        return AutoTokenizer.from_pretrained(model)
 
     @staticmethod
-    def get_most_recent_training_results(directory):
+    def load_most_recently_trained_model(directory):
         """
         Loads the most recent model from the specified directory.
         Assumes that the models are saved to folders which follow a regular naming convention
@@ -289,7 +280,3 @@ class Agent:
         ]
         # Return the alphabetically last folder name
         return directory + max(folders) if folders else None
-
-    @staticmethod
-    def get_tokenizer_from_pretrained(model: str = DEFAULT_MODEL):
-        return AutoTokenizer.from_pretrained(model)
