@@ -29,24 +29,29 @@ load_dotenv()
 
 class EnvService:
     @staticmethod
-    def get(key: str, default=None) -> str:
+    def get(key: str, default: str = None) -> str:
         assert (
             EnvVars(key) is not None
         ), f"Invalid environment variable key: {key}"
 
-        value = os.getenv(key)
-        if value is None or value.strip() == "":
+        value = os.getenv(key).strip()
+        if value is None or value == "":
             if default is not None:
                 return default
             raise ValueError(f"Environment variable '{key}' not set.")
-        return value.strip()
+        return value
 
     @staticmethod
-    def get_int(key: str) -> int | None:
+    def get_int(key: str, default: int = None) -> int:
         assert (
             EnvVars(key) is not None
         ), f"Invalid environment variable key: {key}"
 
+        value = os.getenv(key).strip()
+        if value is None or value == "":
+            if default is not None:
+                return default
+            raise ValueError(f"Environment variable '{key}' not set.")
         return int(os.getenv(key))
 
     @staticmethod
