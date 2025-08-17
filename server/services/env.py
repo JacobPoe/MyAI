@@ -35,7 +35,7 @@ class EnvService:
         ), f"Invalid environment variable key: {key}"
 
         value = os.getenv(key)
-        if value is None:
+        if value is None or value.strip() == "":
             if default is not None:
                 return default
             raise ValueError(f"Environment variable '{key}' not set.")
