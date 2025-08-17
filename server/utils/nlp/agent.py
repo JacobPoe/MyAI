@@ -19,7 +19,7 @@ from utils.nlp.synthesizer import Synthesizer
 
 LOG_LEVEL: LogLevel = LogLevel.AGENT
 DEFAULT_MODEL = EnvService.get(EnvVars.DEFAULT_MODEL.value, Models.QWEN3.value)
-DEFAULT_TOKENIZER = (EnvVars.DEFAULT_TOKENIZER.value, Tokenizers.QWEN3.value)
+DEFAULT_TOKENIZER = EnvService.get(EnvVars.DEFAULT_TOKENIZER.value, Tokenizers.QWEN3.value)
 PRETRAINED_MODEL_DIR = EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value)
 SELECTED_PRETRAINED_MODEL = EnvService.get(
     EnvVars.SELECTED_PRETRAINED_MODEL.value
