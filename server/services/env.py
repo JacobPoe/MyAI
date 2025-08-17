@@ -7,11 +7,12 @@ from enum import Enum
 class EnvVars(Enum):
     DEBUG = "DEBUG"
     DEFAULT_MODEL = "DEFAULT_MODEL"
-    DEFAULT_TOKENIZER = "DEFAULT_TOKENIZER"
-    MAX_LENGTH = "MAX_LENGTH"
+    DEVICE_MAP = "DEVICE_MAP"
+    MAX_NEW_TOKENS = "MAX_NEW_TOKENS"
     SELECTED_PRETRAINED_MODEL = "SELECTED_PRETRAINED_MODEL"
     PRETRAINED_MODEL_DIR = "PRETRAINED_MODEL_DIR"
     ROUTE_ASR = "ROUTE_ASR"
+    ROUTE_IS_ALIVE = "ROUTE_IS_ALIVE"
     ROUTE_TTS = "ROUTE_TTS"
     ROUTE_TRAINING_INIT = "ROUTE_TRAINING_INIT"
     SERVER_PORT = "SERVER_PORT"
@@ -28,24 +29,29 @@ load_dotenv()
 
 class EnvService:
     @staticmethod
-    def get(key: str, default=None) -> str:
+    def get(key: str, default: str = None) -> str:
         assert (
             EnvVars(key) is not None
         ), f"Invalid environment variable key: {key}"
 
-        value = os.getenv(key)
-        if value is None:
+        value = os.getenv(key).strip()
+        if value is None or value == "":
             if default is not None:
                 return default
             raise ValueError(f"Environment variable '{key}' not set.")
-        return value.strip()
+        return value
 
     @staticmethod
-    def get_int(key: str) -> int | None:
+    def get_int(key: str, default: int = None) -> int:
         assert (
             EnvVars(key) is not None
         ), f"Invalid environment variable key: {key}"
 
+        value = os.getenv(key).strip()
+        if value is None or value == "":
+            if default is not None:
+                return default
+            raise ValueError(f"Environment variable '{key}' not set.")
         return int(os.getenv(key))
 
     @staticmethod
