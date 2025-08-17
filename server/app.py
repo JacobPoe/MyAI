@@ -9,14 +9,14 @@ from utils.nlp.trainer import Trainer
 
 DEBUG = EnvService.is_debug()
 ROUTE_ASR = EnvService.get(EnvVars.ROUTE_ASR.value)
+ROUTE_IS_ALIVE = EnvService.get(EnvVars.ROUTE_IS_ALIVE.value)
 ROUTE_TRAINING_INIT = EnvService.get(EnvVars.ROUTE_TRAINING_INIT.value)
 ROUTE_TTS = EnvService.get(EnvVars.ROUTE_TTS.value)
 SERVER_HOST = EnvService.get(EnvVars.SERVER_HOST.value)
-SERVER_PORT = EnvService.get(EnvVars.SERVER_PORT.value)
+SERVER_PORT = EnvService.get_int(EnvVars.SERVER_PORT.value)
 
 # Initialize the LLM instance
 agent = Agent(DEBUG)
-agent.warm_up_generator()
 
 # Initialize the dataset training module
 trainer = Trainer(model=agent.model, tokenizer=agent.tokenizer)
@@ -27,6 +27,16 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 ### GETs
 ####################################################################################################
+@app.route(ROUTE_IS_ALIVE, methods=["GET"])
+def route_is_alive():
+    try:
+        response = agent.warm_up_generator()
+        return jsonify(response), 200
+    except Exception as e:
+        Logger.log(LogLevel.ERROR, f"Failed to wake agent, {e}")
+        return jsonify({"status": "Failed to wake agent."}), 500
+
+
 @app.route(ROUTE_TRAINING_INIT, methods=["GET"])
 def route_training_init():
     try:
