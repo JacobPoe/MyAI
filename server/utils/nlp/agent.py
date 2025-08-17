@@ -15,18 +15,15 @@ from utils.nlp.enums import (
     DeviceMap,
     PipelineFrameworks,
     Models,
-    Roles
+    Roles,
 )
 from utils.logger import Logger, LogLevel
 from utils.nlp.synthesizer import Synthesizer
 
-DEFAULT_MODEL = EnvService.get(EnvVars.DEFAULT_MODEL.value, Models.QWEN3.value)
+AGENT_MODEL = EnvService.get(EnvVars.DEFAULT_MODEL.value, Models.GPT2.value)
 DEVICE_MAP = EnvService.get(EnvVars.DEVICE_MAP.value, DeviceMap.AUTO.value)
-MAX_NEW_TOKENS = EnvService.get_int(EnvVars.MAX_NEW_TOKENS.value, 512)
+MAX_NEW_TOKENS = EnvService.get_int(EnvVars.MAX_NEW_TOKENS.value, 32)
 PRETRAINED_MODEL_DIR = EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value)
-SELECTED_PRETRAINED_MODEL = EnvService.get(
-    EnvVars.SELECTED_PRETRAINED_MODEL.value
-)
 
 
 class Agent:
@@ -46,8 +43,11 @@ class Agent:
         self.model = None
         self.tokenizer = None
 
+        Agent.check_and_build_model_dirs()
         pretrained_model_dir = (
-            EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value) + "/results/"
+                EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value)
+                + "/results/"
+                + AGENT_MODEL
         )
 
         try:
@@ -61,6 +61,8 @@ class Agent:
                     pretrained_model_dir, e
                 ),
             )
+
+        if self.model is None or self.tokenizer is None:
             self.init_default_providers()
 
     def __del__(self):
@@ -166,16 +168,35 @@ class Agent:
 
     def init_default_providers(self):
         if self.model is None:
-            self.init_model()
+            if self.DEBUG:
+                Logger.log(
+                    LogLevel.AGENT,
+                    f"Model is not initialized, defaulting to model '{AGENT_MODEL}'.",
+                )
+            self.init_model(None)
 
         if self.tokenizer is None:
+            if self.DEBUG:
+                Logger.log(
+                    LogLevel.AGENT,
+                    f"Tokenizer is not initialized, defaulting to tokenizer '{AGENT_MODEL}.",
+                )
             self.tokenizer = Agent.get_tokenizer_from_pretrained()
 
         self.set_token_padding()
         Logger.log(LogLevel.AGENT, "Agent initialized using default providers.")
 
-    def init_model(self, model_dir: str = DEFAULT_MODEL):
+    def init_model(self, model_dir: str | None):
         path = Agent.load_most_recently_trained_model(model_dir)
+        if path is not None:
+            Logger.log(
+                LogLevel.AGENT,
+                f"Using most recently trained model: {path}",
+            )
+        else:
+            path = AGENT_MODEL
+            Logger.log(LogLevel.AGENT, f"Using default model: {path}")
+
         self.model = AutoModelForCausalLM.from_pretrained(
             path,
             use_safetensors=True,
@@ -184,8 +205,8 @@ class Agent:
         )
 
         self.model_config = self.load_config(ConfigType.MODEL.value)
-        for k, v in self.model_config:
-            self.model.generation_config[k] = v
+        for k, v in self.model_config.items():
+            setattr(self.model.generation_config, k, v)
 
     def load_config(self, config_type: str):
         config_path = os.path.join(
@@ -262,7 +283,13 @@ class Agent:
             )
 
     @staticmethod
-    def get_tokenizer_from_pretrained(model: str = DEFAULT_MODEL):
+    def check_and_build_model_dirs():
+        os.makedirs(PRETRAINED_MODEL_DIR, exist_ok=True)
+        os.makedirs(PRETRAINED_MODEL_DIR + "/logs", exist_ok=True)
+        os.makedirs(PRETRAINED_MODEL_DIR + "/results", exist_ok=True)
+
+    @staticmethod
+    def get_tokenizer_from_pretrained(model: str = AGENT_MODEL):
         return AutoTokenizer.from_pretrained(model)
 
     @staticmethod
@@ -272,6 +299,7 @@ class Agent:
         Assumes that the models are saved to folders which follow a regular naming convention
         which ends in a timestamp.
         """
+        os.makedirs(PRETRAINED_MODEL_DIR + "/results/" + AGENT_MODEL, exist_ok=True)
 
         folders = [
             f
@@ -279,4 +307,4 @@ class Agent:
             if os.path.isdir(os.path.join(directory, f))
         ]
         # Return the alphabetically last folder name
-        return directory + max(folders) if folders else None
+        return directory + "/" + max(folders) if folders else None

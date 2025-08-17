@@ -4,15 +4,14 @@ import time
 
 from services.env import EnvService, EnvVars
 from utils.logger import Logger, LogLevel
+from utils.nlp.enums import Models
 
 from datasets import load_dataset, concatenate_datasets
 from enum import Enum
 from transformers import Trainer as T, TrainingArguments
 
+MODEL = EnvService.get(EnvVars.DEFAULT_MODEL.value, Models.GPT2.value)
 PRETRAINED_MODEL_DIR = EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value)
-PRETRAINED_MODEL_DEFAULT = EnvService.get(
-    EnvVars.SELECTED_PRETRAINED_MODEL.value
-)
 
 training_args = TrainingArguments(
     per_device_train_batch_size=4,
@@ -38,13 +37,9 @@ class Trainer:
 
     def init_trainer(self):
         training_args.output_dir = (
-            PRETRAINED_MODEL_DIR
-            + "/results/"
-            + PRETRAINED_MODEL_DEFAULT
-            + "__"
-            + str(time.time())
+            PRETRAINED_MODEL_DIR + "/results/" + MODEL + "/" + str(time.time())
         )
-        training_args.logging_dir = PRETRAINED_MODEL_DIR + "/logs"
+        training_args.logging_dir = "/logs"
 
         dataset_configs = Trainer.load_dataset_configs()
         dataset = Trainer.combine_datasets(dataset_configs)
@@ -65,7 +60,6 @@ class Trainer:
             )
 
     def handle_training_start(self, request):
-        Trainer.check_and_build_training_dirs()
         opts = Trainer.parse_request_options(request)
         try:
             self.init_trainer()
@@ -167,12 +161,6 @@ class Trainer:
         with open(datasets_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         return data
-
-    @staticmethod
-    def check_and_build_training_dirs():
-        os.makedirs(PRETRAINED_MODEL_DIR, exist_ok=True)
-        os.makedirs(PRETRAINED_MODEL_DIR + "/logs", exist_ok=True)
-        os.makedirs(PRETRAINED_MODEL_DIR + "/results", exist_ok=True)
 
     @staticmethod
     def parse_request_options(request):
