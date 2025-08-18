@@ -87,7 +87,6 @@ class Agent:
             [to_tokenize], return_tensors=PipelineFrameworks.PYTORCH.value
         ).to(self.model.device)
 
-        self.model.config.update(self.model_config)
         generated_ids = self.model.generate(
             **model_inputs,
             max_new_tokens=MAX_NEW_TOKENS,
