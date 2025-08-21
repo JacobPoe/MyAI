@@ -1,12 +1,12 @@
 import React, {useState} from "react";
 
-import { IOService } from "../services/io.service";
+import { IOService } from "../../services/io.service";
 
-import AudioRecorder from "./audio-recorder";
-import ChatWindow from "./controls/chatWindow";
-import InputCheckbox from "./controls/input.checkbox";
-import InputText from "./controls/input.text";
-import Button from "./controls/button";
+import AudioRecorder from "../controls/audio-recorder/audio-recorder";
+import ChatWindow from "../views/chat-window/chat-window";
+import Checkbox from "../controls/input/checkbox/checkbox";
+import Text from "../controls/input/text/text";
+import Button from "../controls/button/button";
 
 const ttsWarningMsg = "Request TTS replies (this will significantly increase response times and resource consumption).";
 
@@ -27,16 +27,16 @@ const Chatbot = (props) => {
     return (
         <div id={ props.id ? props.id : '' + "--chatbot-view" } className="row">
             <ChatWindow id={props.id} messages={messages} />
-            <InputCheckbox
+            <Checkbox
                 checked={requestNarratedResponses}
                 onChangeHandler={setRequestNarratedResponses}
                 label={ttsWarningMsg}
             />
-            <div className="input-group mt-1">
-                <InputText id={"prompt-chatbot"} text={message} onChangeHandler={setMessage} />
+            <div className="">
+                <Text id={"prompt-chatbot"} text={message} onChangeHandler={setMessage} />
                 <Button onClickHandler={submitTextPrompt} />
             </div>
-            <div className="input-group-append">
+            <div className="">
                 <AudioRecorder requestNarratedResponses={requestNarratedResponses} setMessagesRef={setMessages} mode="question" text="QUESTION" />
                 <AudioRecorder requestNarratedResponses={requestNarratedResponses} setMessagesRef={setMessages} mode="transcribe"  text="TRANSCRIBE" />
             </div>

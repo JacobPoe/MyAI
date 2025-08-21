@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import InputCheckbox from "./input.checkbox";
+import Checkbox from "../../controls/input/checkbox/checkbox";
 
 const ChatWindow = (props) => {
     return (

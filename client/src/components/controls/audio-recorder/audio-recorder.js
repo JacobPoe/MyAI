@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 
-import { IOService } from "../services/io.service";
+import { IOService } from "../../../services/io.service";
 
 const AudioRecorder = (props) => {
     const [recording, setRecording] = useState(false);

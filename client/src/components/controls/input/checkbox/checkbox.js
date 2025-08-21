@@ -1,6 +1,6 @@
 import React from "react";
 
-const InputCheckbox = (props) => {
+const Checkbox = (props) => {
     return (
         <label>
             {props.label ? props.label : ''}
@@ -14,4 +14,4 @@ const InputCheckbox = (props) => {
     )
 }
 
-export default InputCheckbox;
+export default Checkbox;

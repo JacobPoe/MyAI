@@ -1,7 +1,7 @@
-import {SanitizerService} from "../../services/sanitizer.service";
+import {SanitizerService} from "../../../../services/sanitizer.service";
 import React from "react";
 
-const InputText = (props) => {
+const Text = (props) => {
     return (
         <input
             type="text"
@@ -13,4 +13,4 @@ const InputText = (props) => {
     )
 }
 
-export default InputText;
+export default Text;

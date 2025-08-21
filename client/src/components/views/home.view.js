@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import InputCheckbox from "../controls/input.checkbox";
-import Chatbot from "../chatbot";
+
+import Checkbox from "../controls/input/checkbox/checkbox";
+import Chatbot from "../chatbot/chatbot";
 
 const Home = () => {
     const [lightMode, setLightMode] = useState(true);
@@ -8,15 +9,13 @@ const Home = () => {
 
     return (
         <div className={`myai-container ${lightMode ? "light-mode" : "dark-mode"}`}>
-            <div className="row">
-                <div className="col-12 text-center">
+                <div className="text-center">
                     <h1>MyAI</h1>
-                    <InputCheckbox id={"toggle-theme"} checked={lightMode} onChangeHandler={toggleLightMode} label={"Toggle light/dark mode"} />
+                    <Checkbox id={"toggle-theme"} checked={lightMode} onChangeHandler={toggleLightMode} label={"Toggle light/dark mode"} />
                 </div>
-                <div className="col-12 col-md-8 mx-auto">
+                <div className="">
                     <Chatbot id={"chatbot-home"} />
                 </div>
-            </div>
         </div>
     )
 }
