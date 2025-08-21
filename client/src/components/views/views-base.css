@@ -1,0 +1,10 @@
+.view {
+    height: inherit;
+
+    .view-container {
+        margin-left: 10%;
+        margin-right: 10%;
+
+        padding: 12px 6px;
+    }
+}

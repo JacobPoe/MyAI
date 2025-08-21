@@ -1,16 +1,21 @@
 import React from "react";
 
+import "./checkbox.css";
+
 const Checkbox = (props) => {
     return (
-        <label>
-            {props.label ? props.label : ''}
+        <div className={`checkbox checkbox__${props.id} ${props.alignment ? props.alignment : ''}`}>
+            <label htmlFor={"input-checkbox--" + props.id} className="checkbox-label">
+                {props.label ? props.label : ''}
+            </label>
             <input
-                id={"input-checkbox--" + props.id ? props.id : ''}
+                id={"input-checkbox--" + props.id}
+                className={`input-checkbox__${props.id}`}
                 type="checkbox"
                 checked={props.checked}
                 onChange={(e) => props.onChangeHandler(e.target.checked)}
             />
-        </label>
+        </div>
     )
 }
 

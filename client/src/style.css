@@ -1,61 +1,63 @@
 :root {
-  --body-bg-color__light: #b6c2df;
+  --button__margin-left: 6px;
+  --button__margin-right: 6px;
+  --button__border-radius: 6px;
+  --button__padding: 6px 12px;
+
+  /* Light mode */
+  --body-bg-color__light: #7F93D2FF;
+  --header-bg-color__light: #5a7de6;
+  --border-color__light: #4c4c4c;
+  --color__light: #121717;
+
+  .light-mode {
+    background-color: var(--body-bg-color__light);
+    color: var(--color__light);
+  }
+
+  /* Dark mode */
   --body-bg-color__dark: #343030;
+  --header-bg-color__dark: #787878;
+  --border-color__dark: #d0d0d0;
+  --color__dark: #c9c9c9;
+
+  .dark-mode {
+    background-color: var(--body-bg-color__dark);
+    color: var(--color__dark);
+  }
 }
 
 body {
   font-family: 'Roboto', sans-serif;
   margin: 0;
   padding: 0;
-  transition: background-color 0.5s, color 0.5s;
-  width: 100%;
+  width: 100vw;
   height: 100vh;
+
+  #root {
+    height: inherit;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+
+  .message-box {
+    padding: 12px;
+    border-radius: 15px;
+    display: inline-block;
+    position: relative;
+    background-color: #efefef;
+    min-width: 26px;
+    border-top-left-radius: 0;
+    word-wrap: break-word;
+    flex-grow: 0;
+    white-space: pre-wrap;
+  }
 }
 
-#root {
-  height: inherit;
-  display: flex;
-  flex-direction: column;
-}
-
-.myai-container {
-  height: inherit;
-  padding: 12px 6px;
-}
-
-/* Light mode */
-.light-mode {
-    background-color: #b6c2df;
-    color: #121717;
-}
-/* Dark mode */
-.dark-mode {
-  background-color: #343030;
-  color: #c9c9c9;
-}
-
-#chat-window {
-  position: relative;
-  height: 500px;
-  overflow: auto;
-}
-
-.message-line {
-  padding-bottom: 8px;
-  width: 70%;
-  word-break: break-word;
-  display: flex;
-}
-
-.message-box {
-  padding: 12px;
-  border-radius: 15px;
-  display: inline-block;
-  position: relative;
-  background-color: #efefef;
-  min-width: 26px;
-  border-top-left-radius: 0;
-  word-wrap: break-word;
-  flex-grow: 0;
-  white-space: pre-wrap;
-}

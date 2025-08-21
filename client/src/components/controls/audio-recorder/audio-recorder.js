@@ -1,5 +1,7 @@
 import React, { useState, useRef } from "react";
 
+import Button from "../button/button";
+
 import { IOService } from "../../../services/io.service";
 
 const AudioRecorder = (props) => {
@@ -37,10 +39,13 @@ const AudioRecorder = (props) => {
     }
 
     return (
-        <div>
-            <button onClick={async () => await toggleRecording()} className="btn btn-primary">
-                {recording ? "[STOP]" : `[${props.text}]`}
-            </button>
+        <div className={"audio-recorder__" + props.id}>
+            <Button
+                id={"audio-recorder__" + props.id}
+                type={"icon"}
+                onClickHandler={async () => await toggleRecording()}
+                text={recording ? "[STOP]" : `[${props.text}]`}
+            />
         </div>
     );
 };

@@ -1,0 +1,9 @@
+.btn[type="button"],
+.btn[type="icon"] {
+    background-color: transparent;
+    border: 1px solid currentColor;
+    border-radius: var(--button__border-radius);
+    margin-left: var(--button__margin-left);
+    margin-right: var(--button__margin-right);
+    padding: var(--button__padding);
+}

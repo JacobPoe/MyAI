@@ -1,0 +1,15 @@
+.header__light-mode {
+    background-color: var(--header-bg-color__light);
+    border-bottom: 1px solid var(--border-color__light);
+}
+
+.header__dark-mode {
+    background-color: var(--header-bg-color__dark);
+    border-bottom: 1px solid var(--border-color__dark);
+}
+
+.header {
+    padding: 6px 24px;
+    display: flex;
+    flex-direction: row;
+}
