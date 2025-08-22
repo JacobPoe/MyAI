@@ -1,26 +1,26 @@
 import React from "react";
+import "./chat-window.css";
 
-const ChatWindow = (props) => {
+const ChatWindow = ({ messages = [] }) => {
     return (
-        <div className="chat-window">
-            {props.messages?.map((msg, index) => (
-                <div key={index} className={`row message-line ${msg.type}`}>
-                    {msg.text && (
-                        <div className={`message-box ${msg.type === "bot" ? "bot-text" : ""}`}>
-                            {msg.text}
+        <section className="chat-window">
+            <div className="messages" role="list" aria-label="Conversation">
+                {messages.map((m, i) => (
+                    <article key={i} className={`chat-bubble ${m.role}`} role="listitem">
+                        <div className="message-body">{m.text}</div>
+                        <div className="message-meta">
+                            <span className="role-pill">{m.role}</span>
+                            {m.ts ? (
+                                <time className="timestamp" dateTime={new Date(m.ts).toISOString()}>
+                                    {new Date(m.ts).toLocaleTimeString()}
+                                </time>
+                            ) : null}
                         </div>
-                        )
-                    }
-                    {msg.transcription && (
-                        <div className={`transcription-box ${msg.type === "bot" ? "bot-text" : ""}`}>
-                            <strong>Transcription:</strong> {msg.transcription}
-                        </div>
-                        )
-                    }
-                </div>
-            ))}
-        </div>
-    )
-}
+                    </article>
+                ))}
+            </div>
+        </section>
+    );
+};
 
 export default ChatWindow;

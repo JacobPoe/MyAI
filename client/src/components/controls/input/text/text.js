@@ -1,17 +1,27 @@
-import {SanitizerService} from "../../../../services/sanitizer.service";
 import React from "react";
+import "./text.css";
+import { SanitizerService } from "../../../../services/sanitizer.service";
 
-const Text = (props) => {
+const Text = ({ id, value, placeholder = "Type your message here...", onChange }) => {
+    const handleChange = (e) => {
+        const cleaned = SanitizerService.sanitizeText(e.target.value);
+        onChange?.({ ...e, target: { ...e.target, value: cleaned } });
+    };
+
     return (
-        <input
-            type="text"
-            id={"input-text__" + props.id}
-            value={props.text}
-            onChange={(e) => props.onChangeHandler(SanitizerService.sanitizeText(e.target.value))}
-            className="form-control"
-            placeholder={props.placeholder? props.placeholder : "Type your message here..."}
-        />
-    )
-}
+        <div className="text-input">
+            <input
+                id={id}
+                type="text"
+                className="input input--lg"
+                placeholder={placeholder}
+                value={value}
+                onChange={handleChange}
+                aria-label={placeholder}
+                autoComplete="off"
+            />
+        </div>
+    );
+};
 
 export default Text;

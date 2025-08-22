@@ -39,15 +39,16 @@ const AudioRecorder = (props) => {
     }
 
     return (
-        <div className={"audio-recorder__" + props.id}>
+        <div className={`audio-recorder__${props.id}`}>
             <Button
-                id={"audio-recorder__" + props.id}
-                type={"icon"}
+                id={`audio-recorder__${props.id}`}
+                type="icon"
+                variant={recording ? "danger" : "ghost"}
+                aria-pressed={recording}
                 onClickHandler={async () => await toggleRecording()}
-                text={recording ? "[STOP]" : `[${props.text}]`}
+                text={recording ? "■" : props.text}
             />
         </div>
     );
 };
-
 export default AudioRecorder;

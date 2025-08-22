@@ -1,25 +1,32 @@
 import React from "react";
-import Checkbox from "../../controls/input/checkbox/checkbox";
-
 import "./header.css";
 
-const Header = (props) => {
+const Header = ({ checked, theme, toggleTheme }) => {
     const heroText = "PhÖebe";
-    const toggleLightModeMsg = "Toggle between light and dark mode.";
 
     return (
-        <div className={`header header__${props.theme}`}>
-            <h1>{heroText}</h1>
-            <Checkbox
-                id={"toggle-theme"}
-                alignment={"right"}
-                type={"toggle-theme"}
-                checked={props.checked}
-                onChangeHandler={props.toggleTheme}
-                label={toggleLightModeMsg}
-            />
-        </div>
-    )
+        <header className={`header ${theme} z-header`}>
+            <div className="header__inner">
+                <div className="header__brand">
+                    <span>✨</span>
+                    <span>{heroText}</span>
+                </div>
+
+                <div className="header__actions">
+                    <button
+                        type="button"
+                        className="theme-toggle"
+                        role="switch"
+                        aria-checked={checked}
+                        aria-label={checked ? "Switch to dark mode" : "Switch to light mode"}
+                        onClick={toggleTheme}
+                    >
+                        <span className="theme-toggle__thumb" aria-hidden="true" />
+                    </button>
+                </div>
+            </div>
+        </header>
+    );
 };
 
 export default Header;

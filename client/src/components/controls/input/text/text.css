@@ -1,0 +1,7 @@
+/* Text input control */
+.text-input { position: relative; display: flex; align-items: center; }
+.text-input input[type="text"],
+.text-input input[type="search"],
+.text-input textarea { composes: input; }
+.text-input__icon { position: absolute; left: .9rem; pointer-events: none; opacity: .65; }
+.text-input--lg input { composes: input input--lg; }
