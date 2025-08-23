@@ -32,20 +32,7 @@ const Chatbot = (props) => {
             <div className={"prompt-container"}>
                 <div className={"row post-prompt__text"}>
                     <Text id={"prompt-chatbot"} text={message} onChangeHandler={setMessage} />
-                    <Button id={"post-prompt__text"} onClickHandler={submitTextPrompt} text={"Send"} />
-                    <div className={"row-right post-prompt__tts"}>
-                        <h6>TTS</h6>
-                        <Checkbox
-                            id={"request-narrated-responses"}
-                            alignment={"right"}
-                            checked={requestNarratedResponses}
-                            onChangeHandler={setRequestNarratedResponses}
-                            label={ttsWarningMsg}
-                            type={"checkbox"}
-                        />
-                    </div>
-                </div>
-                <div className={"row"}>
+                    <Button id={"post-prompt__text"} onClickHandler={submitTextPrompt} text={"Send ⮚"} />
                     <AudioRecorder
                         id={"post-prompt__audio__question"}
                         requestNarratedResponses={requestNarratedResponses}
@@ -60,6 +47,17 @@ const Chatbot = (props) => {
                         mode="transcribe"
                         text="TRANSCRIBE"
                     />
+                    <div className={"row-right post-prompt__tts"}>
+                        <Checkbox
+                            id={"request-narrated-responses"}
+                            action={"TTS"}
+                            alignment={"right"}
+                            checked={requestNarratedResponses}
+                            onChangeHandler={setRequestNarratedResponses}
+                            label={ttsWarningMsg}
+                            type={"checkbox"}
+                        />
+                    </div>
                 </div>
             </div>
         </div>
