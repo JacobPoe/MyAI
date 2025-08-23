@@ -10,16 +10,20 @@ const Header = (props) => {
     return (
         <div className={`header header__${props.theme}`}>
             <h1>{heroText}</h1>
-            <Checkbox
-                id={"toggle-theme"}
-                alignment={"right"}
-                type={"toggle-theme"}
-                checked={props.checked}
-                onChangeHandler={props.toggleTheme}
-                label={toggleLightModeMsg}
-            />
+            <div className={`row-right header__theme-toggle`}>
+                <h6 className={"header__theme-toggle--light"}>☉</h6>
+                <Checkbox
+                    id={"toggle-theme"}
+                    alignment={"right"}
+                    type={"toggle-theme"}
+                    checked={props.checked}
+                    onChangeHandler={props.toggleTheme}
+                    label={toggleLightModeMsg}
+                />
+                <h6 className={"header__theme-toggle--dark"}>☾</h6>
+            </div>
         </div>
-    )
-};
+        )
+    };
 
 export default Header;

@@ -33,14 +33,17 @@ const Chatbot = (props) => {
                 <div className={"row post-prompt__text"}>
                     <Text id={"prompt-chatbot"} text={message} onChangeHandler={setMessage} />
                     <Button id={"post-prompt__text"} onClickHandler={submitTextPrompt} text={"Send"} />
-                    <Checkbox
-                        id={"request-narrated-responses"}
-                        alignment={"right"}
-                        checked={requestNarratedResponses}
-                        onChangeHandler={setRequestNarratedResponses}
-                        label={ttsWarningMsg}
-                        type={"checkbox"}
-                    />
+                    <div className={"row-right post-prompt__tts"}>
+                        <h6>TTS</h6>
+                        <Checkbox
+                            id={"request-narrated-responses"}
+                            alignment={"right"}
+                            checked={requestNarratedResponses}
+                            onChangeHandler={setRequestNarratedResponses}
+                            label={ttsWarningMsg}
+                            type={"checkbox"}
+                        />
+                    </div>
                 </div>
                 <div className={"row"}>
                     <AudioRecorder
