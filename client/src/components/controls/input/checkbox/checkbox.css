@@ -22,3 +22,31 @@
 }
 .checkbox__label { color: var(--fg); }
 .right { margin-left: auto; }
+
+.sr-only {
+    position: absolute !important;
+    height: 1px; width: 1px; overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px);
+    white-space: nowrap; border: 0; padding: 0; margin: -1px;
+}
+
+.checkbox__box {
+    width: 20px; height: 20px;
+    border-radius: 6px;
+    border: var(--border-width) solid var(--border);
+    background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    display: inline-grid; place-items: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.checkbox input[type="checkbox"]:focus-visible + .checkbox__box {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+}
+
+.checkbox input[type="checkbox"]:checked + .checkbox__box::after {
+    content: "✖";
+    font-size: 14px;
+    line-height: 1;
+}
+

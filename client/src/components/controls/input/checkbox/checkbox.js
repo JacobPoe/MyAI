@@ -5,7 +5,7 @@ import "./checkbox.css";
 const Checkbox = (props) => {
     return (
         <div className={`checkbox checkbox__${props.id} ${props.alignment ? props.alignment : ''}`}>
-            <label htmlFor={"input-checkbox--" + props.id} className="checkbox-label">
+            <label htmlFor={"input-checkbox--" + props.id} className="checkbox-label sr-only">
                 {props.label ? props.label : ''}
             </label>
             <input
@@ -15,6 +15,8 @@ const Checkbox = (props) => {
                 checked={props.checked}
                 onChange={(e) => props.onChangeHandler(e.target.checked)}
             />
+
+            <span className="checkbox__box" aria-hidden="true"/>
         </div>
     )
 }
