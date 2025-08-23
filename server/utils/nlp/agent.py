@@ -83,7 +83,7 @@ class Agent:
                 add_generation_prompt=True,
             )
         else:
-            to_tokenize = self.conversation_history[-1]["content"]
+            to_tokenize = self.conversation_history[-1].get("content")
 
         model_inputs = self.tokenizer(
             [to_tokenize], return_tensors=PipelineFrameworks.PYTORCH.value
