@@ -33,21 +33,6 @@
   --ring: rgba(56,189,248,.45);
 }
 
-/* If no explicit data-theme is set, respect user preference */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    --bg: #0b0c0f;
-    --bg-elev: rgba(255,255,255,.06);
-    --glass: rgba(255,255,255,.08);
-    --fg: #f5f7fa;
-    --muted: rgba(245,247,250,.68);
-    --accent: #38bdf8;
-    --accent-contrast: #041118;
-    --border: rgba(255,255,255,.14);
-    --ring: rgba(56,189,248,.45);
-  }
-}
-
 /* ==========================================================================
    Global Theme Tokens (Sass-ready via CSS variables)
    ========================================================================== */
@@ -139,7 +124,9 @@ body {
 }
 
 img, svg, video, canvas { display: block; max-width: 100%; }
-button, input, textarea, select { font: inherit; color: inherit; }
+button, textarea, select { font: inherit; color: inherit; }
+
+input:focus { color: var(--fg)}
 
 /* Focus */
 :focus-visible {
