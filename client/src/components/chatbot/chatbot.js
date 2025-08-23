@@ -22,7 +22,7 @@ const Chatbot = (props) => {
         setMessage("");
         await IOService.postTextPrompt({message, requestNarratedResponses})
             .then((response) => {
-                setMessages(prevMessages => [...prevMessages, {text: response.text, type: 'bot'}]);
+                setMessages(prevMessages => [...prevMessages, {text: response.text, type: 'system'}]);
             })
     }
 

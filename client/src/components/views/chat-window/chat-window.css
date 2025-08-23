@@ -19,12 +19,12 @@
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
-.chat-bubble.user {
+.chat-bubble__user {
     margin-left: auto;
     background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 20%, transparent), rgba(255,255,255,.02));
     border-color: color-mix(in oklab, var(--accent) 30%, var(--border));
 }
-.chat-bubble.assistant { margin-right: auto; }
+.chat-bubble__system { margin-right: auto; }
 
 .message-meta { display: flex; gap: .5rem; font-size: .8rem; color: var(--muted); }
 .timestamp { opacity: .8; }
