@@ -11,7 +11,6 @@ const Header = (props) => {
         <div className={`header header__${props.theme}`}>
             <h1>{heroText}</h1>
             <div className={`row-right header__theme-toggle`}>
-                <h6 className={"header__theme-toggle--light"}>☉</h6>
                 <Checkbox
                     id={"toggle-theme"}
                     alignment={"right"}
@@ -20,7 +19,6 @@ const Header = (props) => {
                     onChangeHandler={props.toggleTheme}
                     label={toggleLightModeMsg}
                 />
-                <h6 className={"header__theme-toggle--dark"}>☾</h6>
             </div>
         </div>
         )
