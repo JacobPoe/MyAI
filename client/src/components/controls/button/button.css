@@ -1,9 +1,14 @@
+/* Component-specific tweaks that build on .btn base styles in style.css */
 .btn[type="button"],
-.btn[type="icon"] {
-    background-color: transparent;
-    border: 1px solid currentColor;
-    border-radius: var(--button__border-radius);
-    margin-left: var(--button__margin-left);
-    margin-right: var(--button__margin-right);
-    padding: var(--button__padding);
+.btn[type="submit"] { letter-spacing: .2px; }
+
+.btn--danger {
+    background: linear-gradient(180deg, #ef4444, color-mix(in oklab, #ef4444 85%, black));
+    border-color: color-mix(in oklab, #ef4444 60%, black);
+    color: #fff;
+}
+.btn--success {
+    background: linear-gradient(180deg, #22c55e, color-mix(in oklab, #22c55e 85%, black));
+    border-color: color-mix(in oklab, #22c55e 60%, black);
+    color: #fff;
 }
