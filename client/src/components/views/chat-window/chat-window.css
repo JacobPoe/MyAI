@@ -1,4 +1,12 @@
-.chat-window { display: flex; flex-direction: column; gap: var(--space-4); }
+.chat-window {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    height: 67vh;
+    overflow-y: scroll;
+    padding-right: 2px;
+    border-bottom: 1px solid var(--border);
+}
 
 .messages {
     display: grid;
@@ -19,6 +27,7 @@
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
+.chat-bubble:last-of-type { margin-bottom: var(--space-4); }
 .chat-bubble__user {
     margin-left: auto;
     background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 20%, transparent), rgba(255,255,255,.02));
