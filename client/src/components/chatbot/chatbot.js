@@ -11,6 +11,8 @@ import Button from "../controls/button/button";
 import "./chatbot.css";
 
 const ttsWarningMsg = "Request TTS replies (this will significantly increase response times and resource consumption).";
+const recorderLabelTranscribe = "Transcribe audio to text only (no chatbot response).";
+const recorderLabelTalk = "Record audio using your system microphone and get a chatbot response.";
 
 const Chatbot = (props) => {
     const [message, setMessage] = React.useState("");
@@ -39,6 +41,7 @@ const Chatbot = (props) => {
                         setMessagesRef={setMessages}
                         mode="question"
                         text="TALK"
+                        buttonLabel={recorderLabelTalk}
                     />
                     <AudioRecorder
                         id={"post-prompt__audio__transcribe"}
@@ -46,6 +49,7 @@ const Chatbot = (props) => {
                         setMessagesRef={setMessages}
                         mode="transcribe"
                         text="TRANSCRIBE"
+                        buttonLabel={recorderLabelTranscribe}
                     />
                     <div className={"row-right post-prompt__tts"}>
                         <Checkbox

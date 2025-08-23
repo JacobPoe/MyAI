@@ -45,6 +45,7 @@ const AudioRecorder = (props) => {
                 type={"icon"}
                 onClickHandler={async () => await toggleRecording()}
                 text={recording ? "STOP ⭕" : `${props.text} 🎤`}
+                label={props.buttonLabel ? props.buttonLabel : ''}
             />
         </div>
     );
