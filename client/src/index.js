@@ -1,8 +1,8 @@
-import '../style.css';
+import './style.css';
 
 import React from "react";
 import { createRoot } from "react-dom/client";
-import Home from "./components/views/home.view";
+import Home from "./components/views/home/home";
 
 const container = document.getElementById("root");
 const root = createRoot(container);

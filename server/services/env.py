@@ -3,6 +3,8 @@ import os
 from dotenv import load_dotenv
 from enum import Enum
 
+load_dotenv()
+
 
 class EnvVars(Enum):
     DEBUG = "DEBUG"
@@ -22,9 +24,6 @@ class EnvVars(Enum):
 
 _DEBUG = os.getenv(EnvVars.DEBUG.value, "false").strip()
 DEBUG = _DEBUG.lower() == "true" if _DEBUG else False
-
-
-load_dotenv()
 
 
 class EnvService:

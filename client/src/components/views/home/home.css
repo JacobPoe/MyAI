@@ -1,0 +1,6 @@
+/* Home view layout specifics */
+.home-hero { display: grid; place-items: center; text-align: center; padding: var(--space-8) 0; }
+.home-hero h1 { font-size: clamp(1.6rem, 1.1rem + 1.6vw, 2.2rem); margin: 0; }
+.home-hero p { color: var(--muted); margin-top: .5rem; }
+
+.home-section { display: grid; gap: var(--space-4); }

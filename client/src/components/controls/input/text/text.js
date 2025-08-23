@@ -1,16 +1,19 @@
-import {SanitizerService} from "../../services/sanitizer.service";
+import {SanitizerService} from "../../../../services/sanitizer.service";
 import React from "react";
 
-const InputText = (props) => {
+import "./text.css";
+
+const Text = (props) => {
     return (
         <input
             type="text"
+            id={"input-text__" + props.id}
             value={props.text}
             onChange={(e) => props.onChangeHandler(SanitizerService.sanitizeText(e.target.value))}
-            className="form-control"
+            className="input__text"
             placeholder={props.placeholder? props.placeholder : "Type your message here..."}
         />
     )
 }
 
-export default InputText;
+export default Text;

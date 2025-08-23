@@ -1,0 +1,17 @@
+/* Component-specific tweaks that build on .btn base styles in style.css */
+.btn[type="button"],
+.btn[type="submit"] {
+    letter-spacing: .2px;
+    text-transform: uppercase;
+}
+
+.btn--danger {
+    background: linear-gradient(180deg, #ef4444, color-mix(in oklab, #ef4444 85%, black));
+    border-color: color-mix(in oklab, #ef4444 60%, black);
+    color: #fff;
+}
+.btn--success {
+    background: linear-gradient(180deg, #22c55e, color-mix(in oklab, #22c55e 85%, black));
+    border-color: color-mix(in oklab, #22c55e 60%, black);
+    color: #fff;
+}
