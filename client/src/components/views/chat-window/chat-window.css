@@ -26,6 +26,7 @@
     box-shadow: var(--shadow-sm);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+    color: var(--fg);
 }
 .chat-bubble:last-of-type { margin-bottom: var(--space-4); }
 .chat-bubble__user {
