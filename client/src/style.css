@@ -242,6 +242,7 @@ button, input, textarea, select { font: inherit; color: inherit; }
 /* Layout helpers */
 .stack { display: flex; flex-direction: column; gap: var(--space-4); }
 .row { display: flex; align-items: center; gap: var(--space-4); }
+.row-right { display: flex; align-items: center; gap: var(--space-4); margin-left: auto; }
 .space-between { justify-content: space-between; }
 
 /* Z-layers */
