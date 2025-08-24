@@ -10,6 +10,11 @@ class AudioService:
     @staticmethod
     def load_audio(data, debug=False):
         Logger.log(LogLevel.INFO, "Loading audio data from request...")
+
+        if not data or len(data) == 0:
+            Logger.log(LogLevel.ERROR, "Received empty audio data.")
+            return None
+
         audio_buffer = io.BytesIO(data)
         wav_buffer = io.BytesIO()
 
@@ -18,7 +23,7 @@ class AudioService:
         wav_buffer.seek(0)
 
         if debug:
-            Logger.log(LogLevel.DEBUG, "Saving audio data to debug.raw")
+            Logger.log(LogLevel.DEBUG, "Saving audio data to file `debug.raw`.")
             with open("debug.raw", "wb") as f:
                 f.write(audio_buffer.read())
 
