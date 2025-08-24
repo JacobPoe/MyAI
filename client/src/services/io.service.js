@@ -36,7 +36,6 @@ const postTextPrompt = async (props) => {
 };
 
 const postAudioPrompt = async (data, props) => {
-    console.log(`postAudioPrompt data:`, data)
     const response = await HTTPService.post({
         endpoint: "api/v1/asr",
         body: data,
