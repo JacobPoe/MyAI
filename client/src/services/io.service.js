@@ -2,7 +2,7 @@ import { HTTPService } from "./http.service";
 
 const handleAudioPlayback = async (data) => {
     const df = document.createDocumentFragment();
-    const blob = data.blob ? data.blob : new Blob([Uint8Array.from(atob(data.audio), c => c.charCodeAt(0))], { type: 'audio/wav' });
+    const blob = data.blob ? data.blob : new Blob([Uint8Array.from(atob(data.audio), c => c.charCodeAt(0))]);
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
 
@@ -36,11 +36,12 @@ const postTextPrompt = async (props) => {
 };
 
 const postAudioPrompt = async (data, props) => {
+    console.log(`postAudioPrompt data:`, data)
     const response = await HTTPService.post({
         endpoint: "api/v1/asr",
         body: data,
         headers: {
-            "Content-Type": "audio/wav"
+            "Content-Type": "audio/webm"
         },
         params: {
             "narrateResponse": props.requestNarratedResponses || false,
@@ -58,9 +59,7 @@ const postAudioPrompt = async (data, props) => {
     }
 };
 
-const startRecordingAudio = async (mediaRecorderRef, audioChunksRef) => {
-    audioChunksRef.current = [];
-
+const startRecordingAudio = async (audioChunksRef, mediaRecorderRef) => {
     return navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
         mediaRecorderRef.current = new MediaRecorder(stream);
         if (!mediaRecorderRef.current) {
@@ -68,11 +67,18 @@ const startRecordingAudio = async (mediaRecorderRef, audioChunksRef) => {
         }
 
         mediaRecorderRef.current.ondataavailable = (event) => {
-            audioChunksRef.current.push(event.data);
+            const audioRefData = audioChunksRef.current || [];
+            audioRefData.push(event.data);
+            audioChunksRef.current = audioRefData;
         }
 
-        mediaRecorderRef.current.onstop = async () => {
-            const blob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        mediaRecorderRef.current.onstart = () => {
+            audioChunksRef.current = [];
+        }
+
+        mediaRecorderRef.current.onstop = () => {
+            const audioRefData = audioChunksRef.current || [];
+            audioChunksRef.current = new Blob(audioRefData);
 
             // // TODO: Great global debug flag to control this
             // // play back audio for debugging purposes
@@ -81,11 +87,9 @@ const startRecordingAudio = async (mediaRecorderRef, audioChunksRef) => {
 
             // Stop all tracks in the stream
             mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-
-            return blob;
         };
 
-        mediaRecorderRef.current.start();
+        mediaRecorderRef.current.start(10);
     }).catch(error => {
         console.error("Error accessing media devices:", error);
         throw error;
@@ -93,7 +97,11 @@ const startRecordingAudio = async (mediaRecorderRef, audioChunksRef) => {
 };
 
 const stopRecordingAudio = (mediaRecorderRef) => {
+    return new Promise((resolve) => {
         mediaRecorderRef.current.stop();
+
+        resolve();
+    })
 };
 
 export const IOService = {
