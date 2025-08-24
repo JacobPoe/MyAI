@@ -123,7 +123,7 @@ class Agent:
 
         # Load the raw audio data from the request and transcribe it
         # TODO: Do I need to transcribe audio to text first in order to provide a prompt to call self.generate_reply?
-        audio_data = AudioService.load_audio(request.data)
+        audio_data = AudioService.load_audio(request.data, self.DEBUG)
 
         if self.synthesizer.stt_pipeline is None:
             self.synthesizer.init_stt_pipeline()
