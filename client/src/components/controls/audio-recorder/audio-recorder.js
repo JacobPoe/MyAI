@@ -17,21 +17,14 @@ const AudioRecorder = (props) => {
         } else {
             setRecording((prevRecording) => !prevRecording);
             if (recording) {
-                await IOService.stopRecordingAudio(mediaRecorderRef, audioChunksRef)
-                    .then(async (data) => {
-                        if (data.size === 0) {
-                            alert("No audio recorded.");
-                            setRecording(false);
-                            return;
-                        }
-                        await IOService.postAudioPrompt(data,
-                            {
-                                mode: props.mode,
-                                requestNarratedResponses: props.requestNarratedResponses
-                            }).then((response) => {
-                                props.setMessagesRef(prevMessages => [...prevMessages, {text: response.text, transcription: response.transcription, type: 'bot'}])
-                        })
-                    });
+                IOService.stopRecordingAudio(mediaRecorderRef, audioChunksRef);
+                await IOService.postAudioPrompt(audioChunksRef.current,
+                    {
+                        mode: props.mode,
+                        requestNarratedResponses: props.requestNarratedResponses
+                    }).then((response) => {
+                        props.setMessagesRef(prevMessages => [...prevMessages, {text: response.text, transcription: response.transcription, type: 'bot'}])
+                });
             } else {
                 await IOService.startRecordingAudio(mediaRecorderRef, audioChunksRef);
             }

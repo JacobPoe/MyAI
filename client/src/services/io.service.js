@@ -58,7 +58,7 @@ const postAudioPrompt = async (data, props) => {
     }
 };
 
-const startRecordingAudio = (mediaRecorderRef, audioChunksRef) => {
+const startRecordingAudio = async (mediaRecorderRef, audioChunksRef) => {
     audioChunksRef.current = [];
 
     return navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
@@ -71,6 +71,20 @@ const startRecordingAudio = (mediaRecorderRef, audioChunksRef) => {
             audioChunksRef.current.push(event.data);
         }
 
+        mediaRecorderRef.current.onstop = async () => {
+            const blob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+
+            // // TODO: Great global debug flag to control this
+            // // play back audio for debugging purposes
+            // await handleAudioPlayback({ blob: blob })
+            //     .catch(error => console.error('Error playing audio:', error));
+
+            // Stop all tracks in the stream
+            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+
+            return blob;
+        };
+
         mediaRecorderRef.current.start();
     }).catch(error => {
         console.error("Error accessing media devices:", error);
@@ -78,23 +92,8 @@ const startRecordingAudio = (mediaRecorderRef, audioChunksRef) => {
     });
 };
 
-const stopRecordingAudio = async (mediaRecorderRef, audioChunksRef) => {
-    return new Promise((resolve) => {
-        mediaRecorderRef.current.onstop = async () => {
-            const blob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-            resolve(blob);
-
-            // TODO: Great global debug flag to control this
-            // play back audio for debugging purposes
-            // await handleAudioPlayback({ blob: blob })
-            //     .catch(error => console.error('Error playing audio:', error));
-
-            // Stop all tracks in the stream
-            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-        };
-
+const stopRecordingAudio = (mediaRecorderRef) => {
         mediaRecorderRef.current.stop();
-    });
 };
 
 export const IOService = {
