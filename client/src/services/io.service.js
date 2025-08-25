@@ -94,6 +94,7 @@ const stopRecordingAudio = (mediaRecorderRef, audioChunksRef) => {
             // await handleAudioPlayback({ blob: blob })
             //     .catch(error => console.error('Error playing audio:', error));
 
+            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
             resolve(blob);
         };
 
