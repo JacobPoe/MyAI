@@ -37,7 +37,7 @@ class AudioService:
             with open("debug.wav", "wb") as f:
                 f.write(wav_buffer.getvalue())
 
-        sampling_rate, audio_data = wav.read(wav_buffer)
+        audio_data = wav.read(wav_buffer)
         Logger.log(LogLevel.INFO, "Audio data loaded successfully.")
 
         wav_buffer.close()
