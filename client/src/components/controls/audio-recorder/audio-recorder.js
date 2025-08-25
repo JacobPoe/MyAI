@@ -17,7 +17,7 @@ const AudioRecorder = (props) => {
         } else {
             setRecording((prevRecording) => !prevRecording);
             if (recording) {
-                const blob = await IOService.stopRecordingAudio(mediaRecorderRef);
+                const blob = await IOService.stopRecordingAudio(mediaRecorderRef, audioChunksRef);
                 await IOService.postAudioPrompt(blob,
                     {
                         mode: props.mode,
