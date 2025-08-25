@@ -22,7 +22,7 @@ class Synthesizer:
         self.tts_pipeline = None
         self.tts_tokenizer = None
 
-    def stt_pipeline(self, data):
+    def transcribe_audio(self, data):
         """
         Wrapper for the stt_pipeline
         Allows for other classes to use the same pipeline across all instances
@@ -30,7 +30,14 @@ class Synthesizer:
         """
         if self.stt_pipeline is None:
             self.init_stt_pipeline()
-        return self.stt_pipeline(data)
+
+        if isinstance(data, tuple):
+            # Extract the audio data from the tuple or process accordingly
+            audio_data = np.array(data[0] if data else [], dtype=np.float32).flatten()
+        else:
+            audio_data = np.array(data, dtype=np.float32).flatten()
+
+        return self.stt_pipeline(audio_data)
 
     def generate_audio(self, transcript):
         Logger.log(LogLevel.SYNTHESIZER, f"Generating audio response...")
