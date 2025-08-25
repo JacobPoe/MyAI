@@ -4,9 +4,8 @@ const defaultHeaders = {};
 const post = async (props) => {
     const requestUrl = buildRequestUrl(props);
 
-    // Handle form data if provided
-    let body = props.body;
     let headers = props.headers || defaultHeaders;
+    let body = props.body || null;
 
     if (props.formData) {
         const formData = new FormData();

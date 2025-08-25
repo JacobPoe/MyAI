@@ -7,6 +7,7 @@ load_dotenv()
 
 
 class EnvVars(Enum):
+    AUDIO_SAMPLE_RATE = "AUDIO_SAMPLE_RATE"
     DEBUG = "DEBUG"
     DEFAULT_MODEL = "DEFAULT_MODEL"
     DEVICE_MAP = "DEVICE_MAP"

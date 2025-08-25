@@ -121,16 +121,19 @@ class Agent:
 
         reply, audio, transcription = None, None, None
 
-        # Load the raw audio data from the request and transcribe it
-        # TODO: Do I need to transcribe audio to text first in order to provide a prompt to call self.generate_reply?
-        audio_data = AudioService.load_audio(request.data)
-        request_transcription = self.synthesizer.stt_pipeline(audio_data)
+        raw_audio = request.get_data(cache=False)
+        audio_data = AudioService.load_audio(raw_audio)
+
+        if self.synthesizer.stt_pipeline is None:
+            self.synthesizer.init_stt_pipeline()
+
+        request_transcription = self.synthesizer.transcribe_audio(audio_data)
 
         # If the request is a question, generate a reply from the model using the input transcription as a prompt
         if headers.get("mode") == AudioRequestMode.QUESTION.value:
             reply = self.generate_reply(request_transcription.get("text", ""))
 
-        if headers.get("narrateResponse") == "true":
+        if headers.get("narrateResponse").lower() == "true":
             audio = self.synthesizer.generate_audio(reply)
 
         return {
