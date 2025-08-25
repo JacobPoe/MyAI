@@ -75,6 +75,16 @@ const startRecordingAudio = async (audioChunksRef, mediaRecorderRef) => {
             throw new Error("MediaRecorder is not supported in this browser.");
         }
 
+        // Reset audio chunks
+        audioChunksRef.current = [];
+
+        // Add data collection
+        mediaRecorderRef.current.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                audioChunksRef.current.push(event.data);
+            }
+        };
+
         mediaRecorderRef.current.start(500);
     }).catch(error => {
         console.error("Error accessing media devices:", error);
@@ -85,14 +95,9 @@ const startRecordingAudio = async (audioChunksRef, mediaRecorderRef) => {
 const stopRecordingAudio = (mediaRecorderRef, audioChunksRef) => {
     return new Promise((resolve) => {
         const onStop = () => {
-            const chunks = audioChunksRef?.current || [];
+            const chunks = audioChunksRef.current || [];
             const type = mediaRecorderRef.current.mimeType || 'audio/webm;codecs=opus';
             const blob = new Blob(chunks, { type });
-
-            // // TODO: Great global debug flag to control this
-            // // play back audio for debugging purposes
-            // await handleAudioPlayback({ blob: blob })
-            //     .catch(error => console.error('Error playing audio:', error));
 
             mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
             resolve(blob);
