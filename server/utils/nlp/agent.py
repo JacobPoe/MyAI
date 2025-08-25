@@ -45,9 +45,9 @@ class Agent:
 
         Agent.check_and_build_model_dirs()
         pretrained_model_dir = (
-                EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value)
-                + "/results/"
-                + AGENT_MODEL
+            EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value)
+            + "/results/"
+            + AGENT_MODEL
         )
 
         try:
@@ -112,12 +112,8 @@ class Agent:
             )
             Logger.log(LogLevel.DEBUG, f"Request headers: {headers}")
 
-        assert (
-            headers.get("mode") is not None
-        ), "Request mode must be specified."
-        assert AudioRequestMode(
-            headers.get("mode")
-        ), "Invalid request mode specified."
+        assert headers.get("mode") is not None, "Request mode must be specified."
+        assert AudioRequestMode(headers.get("mode")), "Invalid request mode specified."
 
         reply, audio, transcription = None, None, None
 
@@ -147,12 +143,8 @@ class Agent:
         assert (
             request.form.get("userMessage") is not None
         ), "User message must be provided."
-        assert (
-            headers.get("mode") is not None
-        ), "Request mode must be specified."
-        assert AudioRequestMode(
-            headers.get("mode")
-        ), "Invalid request mode specified."
+        assert headers.get("mode") is not None, "Request mode must be specified."
+        assert AudioRequestMode(headers.get("mode")), "Invalid request mode specified."
 
         if self.DEBUG:
             Logger.log(LogLevel.DEBUG, f"Request headers: {headers}")
@@ -224,9 +216,7 @@ class Agent:
             with open(config_path, "r", encoding="utf-8") as f:
                 config = json.load(f)
             if self.DEBUG:
-                Logger.log(
-                    LogLevel.DEBUG, f"{config_type} config loaded: {config}"
-                )
+                Logger.log(LogLevel.DEBUG, f"{config_type} config loaded: {config}")
             return config
         except FileNotFoundError:
             Logger.log(
