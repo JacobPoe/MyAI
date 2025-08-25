@@ -15,6 +15,7 @@ class AudioFormat(Enum):
     WAV = "wav"
     WEBM = "webm"
 
+
 class AudioService:
     @staticmethod
     def load_audio(raw_bytes):
@@ -27,7 +28,9 @@ class AudioService:
         audio_buffer = io.BytesIO(raw_bytes)
         wav_buffer = io.BytesIO()
 
-        audio_segment = AudioSegment.from_file(audio_buffer, format=AudioFormat.WEBM.value)
+        audio_segment = AudioSegment.from_file(
+            audio_buffer, format=AudioFormat.WEBM.value
+        )
         audio_segment = audio_segment.set_frame_rate(AUDIO_SAMPLE_RATE).set_channels(1)
         audio_segment.export(wav_buffer, format=AudioFormat.WAV.value)
         wav_buffer.seek(0)

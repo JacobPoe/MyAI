@@ -30,9 +30,7 @@ DEBUG = _DEBUG.lower() == "true" if _DEBUG else False
 class EnvService:
     @staticmethod
     def get(key: str, default: str = None) -> str:
-        assert (
-            EnvVars(key) is not None
-        ), f"Invalid environment variable key: {key}"
+        assert EnvVars(key) is not None, f"Invalid environment variable key: {key}"
 
         value = os.getenv(key).strip()
         if value is None or value == "":
@@ -43,9 +41,7 @@ class EnvService:
 
     @staticmethod
     def get_int(key: str, default: int = None) -> int:
-        assert (
-            EnvVars(key) is not None
-        ), f"Invalid environment variable key: {key}"
+        assert EnvVars(key) is not None, f"Invalid environment variable key: {key}"
 
         value = os.getenv(key).strip()
         if value is None or value == "":

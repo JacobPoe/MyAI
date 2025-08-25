@@ -136,8 +136,7 @@ class Trainer:
                                 # Take the first answer if it's a list
                                 values.append(
                                     val["text"][0]
-                                    if isinstance(val["text"], list)
-                                    and val["text"]
+                                    if isinstance(val["text"], list) and val["text"]
                                     else ""
                                 )
                             else:

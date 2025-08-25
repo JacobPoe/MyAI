@@ -31,9 +31,7 @@ class Captioner:
 
     def analyze_img(self, image: np.ndarray):
         # unconditional image captioning
-        inputs = processor(
-            image, return_tensors=PipelineFrameworks.PYTORCH.value
-        )
+        inputs = processor(image, return_tensors=PipelineFrameworks.PYTORCH.value)
         out = self.model.generate(**inputs)
         to_return = self.processor.decode(out[0], skip_special_tokens=False)
         Logger.log(log_level, to_return)
