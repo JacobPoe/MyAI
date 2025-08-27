@@ -20,7 +20,7 @@ class Logger:
     @staticmethod
     def log(level: LogLevel, message: str):
         assert LogLevel(level) is not None, f"Invalid log level: {level}"
-        print(f"[MyAI-{level.value}] :: {message}")
+        print(f"[MyAI-{level.value} | {datetime.now().strftime("%Y-%m-%d__%H-%M-%S")}] :: {message}")
 
     @staticmethod
     def save_log(level: LogLevel, conversation_history):
