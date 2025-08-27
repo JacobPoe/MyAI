@@ -10,8 +10,12 @@ from transformers import (
     pipeline,
 )
 
-from utils.nlp.enums import Models, Tasks
+from services.env import EnvService, EnvVars
+
+from utils.nlp.enums import DeviceMap, Models, Tasks
 from utils.logger import Logger, LogLevel
+
+DEVICE_MAP = EnvService.get(EnvVars.DEVICE_MAP.value, DeviceMap.AUTO.value)
 
 
 class Synthesizer:
@@ -46,9 +50,7 @@ class Synthesizer:
             self.init_tts_pipeline()
 
         # Generate audio using the pipeline
-        audio_raw = self.tts_pipeline(
-            transcript, forward_params={"do_sample": True}
-        )
+        audio_raw = self.tts_pipeline(transcript, forward_params={"do_sample": True})
 
         # Convert the generated audio to a numpy array
         audio_data = np.array(audio_raw["audio"], dtype=np.float32).flatten()
@@ -58,24 +60,21 @@ class Synthesizer:
 
         # Store audio data to a buffer
         audio_buffer = io.BytesIO()
-        scipy.io.wavfile.write(
-            audio_buffer, rate=audio_raw["sampling_rate"], data=wav
-        )
+        scipy.io.wavfile.write(audio_buffer, rate=audio_raw["sampling_rate"], data=wav)
 
         # Encode the audio buffer to base64
         audio_buffer.seek(0)
         Logger.log(LogLevel.SYNTHESIZER, f"Audio response generated.")
         return base64.b64encode(audio_buffer.read()).decode("utf-8")
 
-    def init_stt_pipeline(self):
+    def init_stt_pipeline(self, device_map=DEVICE_MAP):
         try:
             Logger.log(LogLevel.SYNTHESIZER, "Initializing STT model...")
             self.stt_model = AutoModelForSpeechSeq2Seq.from_pretrained(
-                Models.WHISPER_LARGE_V3_TURBO.value
+                Models.WHISPER_LARGE_V3_TURBO.value,
+                device_map=device_map,
             )
-            Logger.log(
-                LogLevel.SYNTHESIZER, "STT model initialized successfully."
-            )
+            Logger.log(LogLevel.SYNTHESIZER, "STT model initialized successfully.")
 
             Logger.log(LogLevel.SYNTHESIZER, "Loading STT pipeline...")
             self.stt_pipeline = pipeline(
@@ -83,30 +82,28 @@ class Synthesizer:
                 Models.WHISPER_LARGE_V3_TURBO.value,
                 torch_dtype=torch.float32,
             )
-            Logger.log(
-                LogLevel.SYNTHESIZER, "STT pipeline loaded successfully."
-            )
+            Logger.log(LogLevel.SYNTHESIZER, "STT pipeline loaded successfully.")
         except Exception as e:
             Logger.log(LogLevel.ERROR, "STT pipeline failed to initialize.")
             raise ValueError("STT pipeline failed to initialize.")
 
-    def init_tts_pipeline(self):
+    def init_tts_pipeline(self, device_map=DEVICE_MAP):
         try:
             Logger.log(LogLevel.SYNTHESIZER, "Loading TTS pipeline...")
             self.tts_pipeline = pipeline(
-                Tasks.TTS.value, Models.SUNO_BARK.value
+                Tasks.TTS.value,
+                Models.SUNO_BARK.value,
+                device_map=device_map,
             )
-            Logger.log(
-                LogLevel.SYNTHESIZER, "TTS pipeline loaded successfully."
-            )
+            Logger.log(LogLevel.SYNTHESIZER, "TTS pipeline loaded successfully.")
 
             Logger.log(LogLevel.SYNTHESIZER, "Loading tokenizer...")
             self.tts_tokenizer = AutoTokenizer.from_pretrained(
-                Models.WHISPER_LARGE_V3_TURBO.value, use_fast=True
+                Models.SUNO_BARK.value,
+                use_fast=True,
+                device_map=device_map,
             )
-            Logger.log(
-                LogLevel.SYNTHESIZER, "TTS tokenizer loaded successfully."
-            )
+            Logger.log(LogLevel.SYNTHESIZER, "TTS tokenizer loaded successfully.")
         except Exception as e:
             Logger.log(LogLevel.ERROR, "TTS pipeline failed to initialize.")
             raise ValueError("TTS pipeline failed to initialize.")
