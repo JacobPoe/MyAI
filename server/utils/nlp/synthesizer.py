@@ -1,11 +1,10 @@
 import base64
 import io
+import nemo.collections.asr as nemo_asr
 import numpy as np
 import scipy
-import torch
 
 from transformers import (
-    AutoModelForSpeechSeq2Seq,
     AutoTokenizer,
     pipeline,
 )
@@ -20,28 +19,28 @@ DEVICE_MAP = EnvService.get(EnvVars.DEVICE_MAP.value, DeviceMap.AUTO.value)
 
 class Synthesizer:
     def __init__(self):
-        self.stt_model = None
-        self.stt_pipeline = None
+        self.asr_model = None
 
         self.tts_pipeline = None
         self.tts_tokenizer = None
 
     def transcribe_audio(self, data):
         """
-        Wrapper for the stt_pipeline
+        Wrapper for the asr_model.transcribe() method.
         Allows for other classes to use the same pipeline across all instances
         (param) data: The audio data to be transcribed
         """
-        if self.stt_pipeline is None:
-            self.init_stt_pipeline()
+
+        if self.asr_model is None:
+            self.init_asr_pipeline()
 
         if isinstance(data, tuple):
             # Extract the audio data from the tuple or process accordingly
-            audio_data = np.array(data[0] if data else [], dtype=np.float32).flatten()
+            audio_data = np.array(data[1] if data and len(data) > 1 else [], dtype=np.float32).flatten()
         else:
             audio_data = np.array(data, dtype=np.float32).flatten()
 
-        return self.stt_pipeline(audio_data)
+        return self.asr_model.transcribe(audio_data)
 
     def generate_audio(self, transcript):
         Logger.log(LogLevel.SYNTHESIZER, f"Generating audio response...")
@@ -67,25 +66,16 @@ class Synthesizer:
         Logger.log(LogLevel.SYNTHESIZER, f"Audio response generated.")
         return base64.b64encode(audio_buffer.read()).decode("utf-8")
 
-    def init_stt_pipeline(self, device_map=DEVICE_MAP):
+    def init_asr_pipeline(self, device_map=DEVICE_MAP):
         try:
-            Logger.log(LogLevel.SYNTHESIZER, "Initializing STT model...")
-            self.stt_model = AutoModelForSpeechSeq2Seq.from_pretrained(
-                Models.WHISPER_LARGE_V3_TURBO.value,
-                device_map=device_map,
+            Logger.log(LogLevel.SYNTHESIZER, "Initializing ASR model...")
+            self.asr_model = nemo_asr.models.ASRModel.from_pretrained(
+                model_name=Models.PARAKEET.value,
             )
-            Logger.log(LogLevel.SYNTHESIZER, "STT model initialized successfully.")
-
-            Logger.log(LogLevel.SYNTHESIZER, "Loading STT pipeline...")
-            self.stt_pipeline = pipeline(
-                Tasks.ASR.value,
-                Models.WHISPER_LARGE_V3_TURBO.value,
-                torch_dtype=torch.float32,
-            )
-            Logger.log(LogLevel.SYNTHESIZER, "STT pipeline loaded successfully.")
+            Logger.log(LogLevel.SYNTHESIZER, "ASR model initialized successfully.")
         except Exception as e:
-            Logger.log(LogLevel.ERROR, "STT pipeline failed to initialize.")
-            raise ValueError("STT pipeline failed to initialize.")
+            Logger.log(LogLevel.ERROR, f"ASR model failed to initialize, {e}")
+            raise ValueError("ASR model failed to initialize.")
 
     def init_tts_pipeline(self, device_map=DEVICE_MAP):
         try:

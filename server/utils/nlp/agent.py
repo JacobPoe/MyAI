@@ -87,11 +87,10 @@ class Agent:
 
         model_inputs = self.tokenizer(
             [to_tokenize], return_tensors=PipelineFrameworks.PYTORCH.value
-        ).to(self.model.device)
+        ).to(DEVICE_MAP)
 
         generated_ids = self.model.generate(
             **model_inputs,
-            max_new_tokens=MAX_NEW_TOKENS,
         )
         output_ids = generated_ids[0][len(model_inputs.input_ids[0]) :].tolist()
         response = self.tokenizer.decode(
@@ -115,19 +114,17 @@ class Agent:
         assert headers.get("mode") is not None, "Request mode must be specified."
         assert AudioRequestMode(headers.get("mode")), "Invalid request mode specified."
 
-        reply, audio, transcription = None, None, None
+        reply, audio = None, None
 
         raw_audio = request.get_data(cache=False)
         audio_data = AudioService.load_audio(raw_audio)
 
-        if self.synthesizer.stt_pipeline is None:
-            self.synthesizer.init_stt_pipeline()
-
-        request_transcription = self.synthesizer.transcribe_audio(audio_data)
+        hypothesis = self.synthesizer.transcribe_audio(audio_data)
+        transcription = hypothesis[0].text if hypothesis else ""
 
         # If the request is a question, generate a reply from the model using the input transcription as a prompt
         if headers.get("mode") == AudioRequestMode.QUESTION.value:
-            reply = self.generate_reply(request_transcription.get("text", ""))
+            reply = self.generate_reply(transcription)
 
         if headers.get("narrateResponse").lower() == "true":
             audio = self.synthesizer.generate_audio(reply)
@@ -135,7 +132,7 @@ class Agent:
         return {
             "reply": reply,
             "audio": audio,
-            "transcription": request_transcription.get("text", ""),
+            "transcription": transcription,
         }
 
     def handle_text_prompt(self, request):

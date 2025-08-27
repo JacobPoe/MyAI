@@ -32,3 +32,9 @@ torch
 # If you wish to use CUDA over your CPU, please install these packages manually according to your system specifications.
 # e.g., pip3 install torch torchaudio torchvision --index-url https://download.pytorch.org/whl/cu128
 # See https://pytorch.org/
+
+########################################################################################################################
+# System Requirements
+# Run these commands from your terminal to install system dependencies.
+
+# pip install -U nemo_toolkit["asr"]

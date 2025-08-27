@@ -24,6 +24,7 @@ class Models(Enum):
     QWEN3 = "Qwen/Qwen3-235B-A22B-Thinking-2507-FP8"
     SUNO_BARK = "suno/bark"
     WHISPER_LARGE_V3_TURBO = "openai/whisper-large-v3-turbo"
+    PARAKEET = "nvidia/parakeet-tdt-0.6b-v3"
 
 
 class PipelineFrameworks(Enum):
