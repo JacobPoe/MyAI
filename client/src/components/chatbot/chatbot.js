@@ -1,14 +1,15 @@
 import React, {useState} from "react";
 
-import { IOService } from "../../services/io.service";
+import { IOService } from "jake-compoenents/dist/services/io.service";
 
-import AudioRecorder from "../controls/audio-recorder/audio-recorder";
-import ChatWindow from "../views/chat-window/chat-window";
-import Checkbox from "../controls/input/checkbox/checkbox";
-import Text from "../controls/input/text/text";
-import Button from "../controls/button/button";
+import AudioRecorder from "jake-compoenents/dist/components/controls/audio-recorder/audio-recorder";
+import Checkbox from "jake-compoenents/dist/components/controls/input/checkbox/checkbox";
+import Text from "jake-compoenents/dist/components/controls/input/text/text";
+import Button from "jake-compoenents/dist/components/controls/button/button";
 
 import "./chatbot.css";
+import ChatWindow from "../views/chat-window/chat-window";
+import { HTTPService } from "../../services/http.service";
 
 const ttsWarningMsg = "Request TTS replies (this will significantly increase response times and resource consumption).";
 const recorderLabelTranscribe = "Transcribe audio to text only (no chatbot response).";
@@ -22,11 +23,45 @@ const Chatbot = (props) => {
     const submitTextPrompt = async () => {
         setMessages(prevMessages => [...prevMessages, {text: message, type: 'user'}]);
         setMessage("");
-        await IOService.postTextPrompt({message, requestNarratedResponses})
-            .then((response) => {
-                setMessages(prevMessages => [...prevMessages, {text: response.text, type: 'system'}]);
-            })
+
+        await HTTPService.post({
+                endpoint: 'api/v1/tts',
+                params: {
+                    "narrateResponse": props.requestNarratedResponses || false,
+                    "mode": props.mode || "question"
+                },
+                formData: {
+                    "userMessage": props.message || ""
+                }
+            }).then(async (response) => {
+            if (response.audio) {
+                await IOService.handleAudioPlayback(response);
+            }
+        })
     }
+
+    const postAudioPrompt = async (blob, props) => {
+        const response = await HTTPService.post({
+            endpoint: "api/v1/asr",
+            body: blob,
+            headers: {
+                "Content-Type": "audio/webm; codecs=opus"
+            },
+            params: {
+                "narrateResponse": props.requestNarratedResponses || false,
+                "mode": props.mode || "question"
+            }
+        }).then(async (response) => {
+            if (response.audio) {
+                await IOService.handleAudioPlayback(response);
+            }
+        })
+
+        return {
+            text: response.reply || "",
+            transcription: response.transcription || "",
+        }
+    };
 
     return (
         <div id={ props.id ? props.id : '' + "--chatbot-view" }>
@@ -39,6 +74,7 @@ const Chatbot = (props) => {
                         id={"post-prompt__audio__question"}
                         requestNarratedResponses={requestNarratedResponses}
                         setMessagesRef={setMessages}
+                        postAudioPromptCallback={postAudioPrompt}
                         mode="question"
                         text="TALK"
                         buttonLabel={recorderLabelTalk}
@@ -47,6 +83,7 @@ const Chatbot = (props) => {
                         id={"post-prompt__audio__transcribe"}
                         requestNarratedResponses={requestNarratedResponses}
                         setMessagesRef={setMessages}
+                        postAudioPromptCallback={postAudioPrompt}
                         mode="transcribe"
                         text="TRANSCRIBE"
                         buttonLabel={recorderLabelTranscribe}

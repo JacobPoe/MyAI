@@ -1,5 +1,5 @@
 import React from "react";
-import Checkbox from "../../controls/input/checkbox/checkbox";
+import Checkbox from "jake-compoenents/dist/components/controls/input/checkbox/checkbox";
 
 import "./header.css";
 
