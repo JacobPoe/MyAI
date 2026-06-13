@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
@@ -8,12 +10,13 @@ from utils.nlp.agent import Agent
 from utils.nlp.trainer import Trainer
 
 DEBUG = EnvService.is_debug()
-ROUTE_ASR = EnvService.get(EnvVars.ROUTE_ASR.value)
-ROUTE_IS_ALIVE = EnvService.get(EnvVars.ROUTE_IS_ALIVE.value)
-ROUTE_TRAINING_INIT = EnvService.get(EnvVars.ROUTE_TRAINING_INIT.value)
-ROUTE_TTS = EnvService.get(EnvVars.ROUTE_TTS.value)
-SERVER_HOST = EnvService.get(EnvVars.SERVER_HOST.value)
-SERVER_PORT = EnvService.get_int(EnvVars.SERVER_PORT.value)
+ROUTE_ASR = EnvService.get(EnvVars.ROUTE_ASR.value, "/api/v1/asr")
+ROUTE_IS_ALIVE = EnvService.get(EnvVars.ROUTE_IS_ALIVE.value, "/api/v1/is_alive")
+ROUTE_TRAINING_INIT = EnvService.get(EnvVars.ROUTE_TRAINING_INIT.value, "/api/v1/training")
+ROUTE_TTS = EnvService.get(EnvVars.ROUTE_TTS.value, "/api/v1/tts")
+SERVER_HOST = EnvService.get(EnvVars.SERVER_HOST.value, "0.0.0.0")
+SERVER_PORT = EnvService.get_int(EnvVars.SERVER_PORT.value, 1587)
+
 
 # Initialize the LLM instance
 agent = Agent(DEBUG)
