@@ -10,13 +10,15 @@ from datasets import load_dataset, concatenate_datasets
 from enum import Enum
 from transformers import Trainer as T, TrainingArguments
 
+MAX_NEW_TOKENS = EnvService.get_int(EnvVars.MAX_NEW_TOKENS.value)
 MODEL = EnvService.get(EnvVars.DEFAULT_MODEL.value, Models.GPT2.value)
-PRETRAINED_MODEL_DIR = EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value)
+NUM_TRAINING_EPOCHS = EnvService.get_int(EnvVars.TRAINING_ARGS_NUM_EPOCHS.value, 1)
+PRETRAINED_MODEL_DIR = EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value, "../.models/pretrained")
 
 training_args = TrainingArguments(
     per_device_train_batch_size=4,
     per_device_eval_batch_size=4,
-    num_train_epochs=EnvService.get_int(EnvVars.TRAINING_ARGS_NUM_EPOCHS.value),
+    num_train_epochs=NUM_TRAINING_EPOCHS,
     eval_strategy="epoch",
     save_strategy="epoch",
     save_total_limit=2,
@@ -103,7 +105,7 @@ class Trainer:
                 examples["text"],
                 padding="max_length",
                 truncation=True,
-                max_length=EnvService.get_int(EnvVars.MAX_NEW_TOKENS.value),
+                max_length=MAX_NEW_TOKENS,
             )
             # For language modeling, the labels are the input_ids themselves
             tokenized["labels"] = tokenized["input_ids"].copy()
