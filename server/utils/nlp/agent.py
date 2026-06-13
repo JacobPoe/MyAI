@@ -20,10 +20,12 @@ from utils.nlp.enums import (
 from utils.logger import Logger, LogLevel
 from utils.nlp.synthesizer import Synthesizer
 
+
 AGENT_MODEL = EnvService.get(EnvVars.DEFAULT_MODEL.value, Models.GPT2.value)
+CURRENT_WORKING_DIRECTORY = os.getcwd()
 DEVICE_MAP = EnvService.get(EnvVars.DEVICE_MAP.value, DeviceMap.AUTO.value)
 MAX_NEW_TOKENS = EnvService.get_int(EnvVars.MAX_NEW_TOKENS.value, 32)
-PRETRAINED_MODEL_DIR = EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value)
+PRETRAINED_MODEL_DIR = EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value, CURRENT_WORKING_DIRECTORY + "/.models/pretrained")
 
 
 class Agent:
@@ -45,7 +47,7 @@ class Agent:
 
         Agent.check_and_build_model_dirs()
         pretrained_model_dir = (
-            EnvService.get(EnvVars.PRETRAINED_MODEL_DIR.value)
+            PRETRAINED_MODEL_DIR
             + "/results/"
             + AGENT_MODEL
         )

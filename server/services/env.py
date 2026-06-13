@@ -32,23 +32,29 @@ class EnvService:
     def get(key: str, default: str = None) -> str:
         assert EnvVars(key) is not None, f"Invalid environment variable key: {key}"
 
-        value = os.getenv(key).strip()
+        value = os.getenv(key)
         if value is None or value == "":
             if default is not None:
+                os.environ[key] = default
                 return default
             raise ValueError(f"Environment variable '{key}' not set.")
-        return value
+        else:
+            value = value.strip()
+            return value
 
     @staticmethod
     def get_int(key: str, default: int = None) -> int:
         assert EnvVars(key) is not None, f"Invalid environment variable key: {key}"
 
-        value = os.getenv(key).strip()
+        value = os.getenv(key)
         if value is None or value == "":
             if default is not None:
+                os.environ[key] = str(default)
                 return default
             raise ValueError(f"Environment variable '{key}' not set.")
-        return int(os.getenv(key))
+        else:
+            value = value.strip()
+            return int(value)
 
     @staticmethod
     def is_debug() -> bool:
